@@ -16,35 +16,51 @@ Systems Programming
 **Proposed Schedule**
 _Week
 Task_
+
+
 10/28/24
 We will write a Game Design Document (GDD) that outlines the game’s goals, mechanics, and features. This will also include basic character and environmental designs. 
 We will create a shared file to document weekly changes and updates to the game.
 We will research successful 2D game engines. 
 We will set up the github repository. We will implement an API to test game rendering. 
+
+
 11/04/24
 We will use an API to receive mouse and keyboard input. 
 We will implement player movement. We will use a physics crate.
 We will create a player sprite. We will create 2D game assets.
 We will set up a game loop that uploads and renders the player.
+
+
 11/11/24
 We will add collision detection between the player and objects. 
 We will build a basic design level using tilemaps or custom geometry. 
 We will add game mechanics like item collection or enemies. We will build items to collect or gain (i.e. coins, weapons, food). We will build an AI enemy that may chase or fight the player.
+
+
 11/18/24
 We will add sound and visual effects. We can use crates or APIs to integrate this. Sound and visual effects may be cued at various events, movements, or game mechanics. We will chart this out to ensure reliability and continuity within the game. 
 We will add a basic user interface for health or victory points. Health and victory points can be seen throughout the game.
 We will create multiple levels and transitions. These levels will encourage the user to continue playing the game and level up as the game progresses. Enemies, item collection, and/or points may instigate this.
 We will create a game over and title screen.
 We will have the status report submitted. The game should run enough to let the player(s) accomplish the main objectives. 
+
+
 11/25/24
 We will test the game and fix bugs. We will playtest the game to detect errors.
 We will polish game mechanics, interactions, and features.
 We will refine animations and sound effects.
+
+
 12/02/24
 We will optimize game performance. 
 We will write game documentation. 
 We will create a game demo for our final presentation. 
+
+
 12/09/24
 We will put finishing touches on the project, as well as debugging and preparing for our presentation. Our project will be complete and free of any errors that may prevent playability. We will optimize the user experience and accessibility to allow all players to participate in the project. 
+
+
 12/16/24
 We will practice our final presentations. We will present on our project.
