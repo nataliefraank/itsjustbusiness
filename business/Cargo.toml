@@ -1,0 +1,9 @@
+[package]
+name = "business"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+device_query = "2.1.0"
+rapier2d = "0.22.0"
+windows = "0.58.0"
