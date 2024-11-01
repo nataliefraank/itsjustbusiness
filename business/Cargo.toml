@@ -7,3 +7,5 @@ edition = "2021"
 device_query = "2.1.0"
 rapier2d = "0.22.0"
 windows = "0.58.0"
+bevy = "0.11"
+
