@@ -12,8 +12,8 @@ const MAP_HEIGHT: usize = 10;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup)
-        .add_startup_system(spawn_player)
+        .add_systems(Startup, setup)
+        .add_systems(Startup, spawn_player)
         .run();
 }
 
