@@ -38,7 +38,7 @@ fn setup(mut commands: Commands) {
     for y in 0..MAP_HEIGHT {
         for x in 0..MAP_WIDTH {
             let tile_type = TILE_MAP[y][x];
-            let color = match tile_type {
+            let color: Color = match tile_type {
                 TileType::Grass => Color::rgb(0.1, 0.8, 0.1),
                 TileType::Water => Color::rgb(0.1, 0.4, 0.8),
             };
@@ -89,13 +89,3 @@ fn player_movement(
     let speed = 5.0;
     player_transform.translation += direction * speed;
 }
-
-// use device_query::{DeviceEvents, DeviceQuery, DeviceState};
-
-// fn main() {
-//     let device_state = DeviceState::new();
-//     loop {
-//         let mouse_state = device_state.get_mouse();
-//         println!("{:?}", mouse_state.coords);
-//     }
-// }
