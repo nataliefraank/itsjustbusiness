@@ -7,14 +7,6 @@ use bevy_ecs_tilemap::prelude::*;
 #[derive(Component)]
 struct Person;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Spawn a sprite with the correct texture path
-    commands.spawn(SpriteBundle {
-        texture: asset_server.load("janitor32x48.png"), // Correct path here
-        ..default()
-    });
-}
-
 fn main() {
     App::new()
         // Add Bevy default plugins
@@ -24,23 +16,28 @@ fn main() {
         // Add bevy_ecs_tiled plugin
         .add_plugins(TiledMapPlugin::default())
         // Add our setup system to spawn assets
-        .add_systems(Startup, setup)
+        .add_systems(Startup, load_sprite)
         // Add the startup system for the map
-        .add_systems(Startup, startup)
+        .add_systems(Startup, load_tilemap)
+        // .add_startup_system(load_tilemap)
         .run();
 }
 
-fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Spawn a 2D camera once
+fn load_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // Spawn a sprite with the correct texture path
+    commands.spawn(SpriteBundle {
+        texture: asset_server.load("janitor32x48.png"),
+        ..default()
+    });
+}
+
+fn load_tilemap(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // Spawn a 2D camera
     commands.spawn(Camera2dBundle::default());
 
-    // Load and spawn the map: ensure any tile/tileset paths are relative to assets/ folder
+    // Load the map: ensure any tile / tileset paths are relative to assets/ folder
     let map_handle: Handle<TiledMap> = asset_server.load("tilemap_level1.tmx");
 
-    println!("Map loaded: {:?}", map_handle);
-
-    // Spawn the map with the default options
-    commands.spawn(TiledMap {
-        handle: map_handle.clone(),
-    });
+    // Spawn the map with default options
+    commands.spawn(TiledMapHandle(map_handle));
 }
