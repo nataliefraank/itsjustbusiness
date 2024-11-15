@@ -40,5 +40,7 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
     println!("Map loaded: {:?}", map_handle);
 
     // Spawn the map with the default options
-    commands.spawn(TiledMapHandle(map_handle));
+    commands.spawn(TiledMap {
+        handle: map_handle.clone(),
+    });
 }
