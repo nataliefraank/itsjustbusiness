@@ -64,3 +64,12 @@ We will put finishing touches on the project, as well as debugging and preparing
 
 12/16/24
 We will practice our final presentations. We will present on our project.
+
+**Status Update**
+John and Natalie drafted a GDD (https://docs.google.com/document/d/1-JhXKA7o_2BysKqky-wLEJrhXI38WQaop78RezyCiPc/edit?usp=sharing). It includes fundamental game design ideas and mechanics. It does not go into much depth. We will add to the document as we develop.
+We will track weekly changes and updates on GitHub commits right now because it has built-in version control. As the game becomes more advanced, this may change.
+We found a repository of successful 2D games. 
+We might use GFX to help with 2D game rendering. Reddit has more ideas.
+We found the 2d physics crate Rapier and added it to the project repository.
+We added the game development crate bevy and created a simple implementation.
+John created the player sprite. Natalie created the tilemap.  
