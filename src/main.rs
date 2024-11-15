@@ -1,43 +1,140 @@
-use bevy::input::keyboard::KeyCode;
+//! This example demonstrates how to load and unload maps.
+
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
 use bevy_ecs_tiled::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-#[derive(Component)]
-struct Person;
+// mod helper;
 
 fn main() {
     App::new()
-        // Add Bevy default plugins
+        // Bevy default plugins
         .add_plugins(DefaultPlugins)
-        // Add bevy_ecs_tilemap plugin
+        // Examples helper plugin (does not matter for this example)
+        // .add_plugins(helper::HelperPlugin)
+        // bevy_ecs_tilemap and bevy_ecs_tiled main plugins
         .add_plugins(TilemapPlugin)
-        // Add bevy_ecs_tiled plugin
         .add_plugins(TiledMapPlugin::default())
-        // Add our setup system to spawn assets
-        .add_systems(Startup, load_sprite)
-        // Add the startup system for the map
-        .add_systems(Startup, load_tilemap)
-        // .add_startup_system(load_tilemap)
+        // Add our systems and run the app!
+        .init_state::<MapState>()
+        .add_systems(Startup, startup)
+        .add_systems(
+            Update,
+            (
+                handle_load.run_if(in_state(MapState::Unloaded)),
+                (handle_unload, handle_reload, handle_respawn).run_if(in_state(MapState::Loaded)),
+            ),
+        )
+        .add_systems(Update, log_transitions)
         .run();
 }
 
-fn load_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Spawn a sprite with the correct texture path
-    commands.spawn(SpriteBundle {
-        texture: asset_server.load("janitor32x48.png"),
-        ..default()
-    });
+fn startup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut next_state: ResMut<NextState<MapState>>,
+) {
+    commands.spawn(Camera2dBundle::default());
+    // commands.spawn(TextBundle::from(
+    //     "U = Unload map by removing asset\nI = Unload map by despawning entity\nL = Load finite map\nK = Replace loaded map component without unloading\nR = Reload map using the RespawnTiledMap component",
+    // ));
+
+    commands.spawn(TiledMapHandle(asset_server.load("tilemap_level1.tmx")));
+    next_state.set(MapState::Loaded);
 }
 
-fn load_tilemap(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Spawn a 2D camera
-    commands.spawn(Camera2dBundle::default());
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
+enum MapState {
+    Loaded,
+    #[default]
+    Unloaded,
+}
 
-    // Load the map: ensure any tile / tileset paths are relative to assets/ folder
-    let map_handle: Handle<TiledMap> = asset_server.load("tilemap_level1.tmx");
+fn handle_load(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut next_state: ResMut<NextState<MapState>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::KeyL) {
+        commands.spawn(TiledMapHandle(asset_server.load("tilemap_level1.tmx")));
+        next_state.set(MapState::Loaded);
+    }
+}
 
-    // Spawn the map with default options
-    commands.spawn(TiledMapHandle(map_handle));
+fn handle_reload(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    maps_query: Query<Entity, With<TiledMapMarker>>,
+    mut next_state: ResMut<NextState<MapState>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::KeyK) {
+        if let Ok(entity) = maps_query.get_single() {
+            commands
+                .entity(entity)
+                .insert(TiledMapHandle(asset_server.load("tilemap_level1.tmx")));
+        } else {
+            warn!("Cannot reload: no map loaded ?");
+        }
+
+        next_state.set(MapState::Loaded);
+    }
+}
+
+fn handle_unload(
+    mut commands: Commands,
+    mut maps: ResMut<Assets<TiledMap>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    maps_query: Query<Entity, With<TiledMapMarker>>,
+    mut next_state: ResMut<NextState<MapState>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::KeyU) {
+        // This example shows that the map gets properly unloaded if the
+        // `TiledMap` asset is removed.
+        //
+        // However, typically you would remove the map entity instead.
+        let handles: Vec<_> = maps.iter().map(|(handle, _)| handle).collect();
+        for handle in handles {
+            // This will cause the map to unload.
+            maps.remove(handle);
+        }
+
+        // Actually remove the entities, so that we can re-add later.
+        // If we don't do this, the entity still exists and the map will not be
+        // reloaded properly.
+        for entity in maps_query.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
+        next_state.set(MapState::Unloaded);
+    } else if keyboard_input.just_pressed(KeyCode::KeyI) {
+        // Just remove the entities directly. This will also unload the map.
+        for entity in maps_query.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
+        next_state.set(MapState::Unloaded);
+    }
+}
+
+fn handle_respawn(
+    mut commands: Commands,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    maps_query: Query<Entity, With<TiledMapMarker>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::KeyR) {
+        if let Ok(entity) = maps_query.get_single() {
+            commands.entity(entity).insert(RespawnTiledMap);
+        } else {
+            warn!("Cannot respawn: no map loaded ?");
+        }
+    }
+}
+
+fn log_transitions(mut transitions: EventReader<StateTransitionEvent<MapState>>) {
+    for transition in transitions.read() {
+        info!(
+            "transition: {:?} => {:?}",
+            transition.exited, transition.entered
+        );
+    }
 }
