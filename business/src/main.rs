@@ -37,6 +37,8 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Load and spawn the map: ensure any tile/tileset paths are relative to assets/ folder
     let map_handle: Handle<TiledMap> = asset_server.load("tilemap_level1.tmx");
 
+    println!("Map loaded: {:?}", map_handle);
+
     // Spawn the map with the default options
     commands.spawn(TiledMapHandle(map_handle));
 }
