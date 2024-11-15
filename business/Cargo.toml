@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 device_query = "2.1.0"
 rapier2d = "0.22.0"
-windows = "0.58.0"
-bevy = "0.11"
+bevy = "0.14"
+bevy_ecs_tiled = "0.4"
+bevy_ecs_tilemap = "0.14"
 
