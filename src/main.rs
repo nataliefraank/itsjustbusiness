@@ -29,6 +29,12 @@ fn main() {
         .run();
 }
 
+fn keyboard_input(
+    keys: Res<ButtonInput<KeyCode>>
+){
+
+}
+
 fn startup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
