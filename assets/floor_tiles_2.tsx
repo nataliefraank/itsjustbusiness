@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.0" name="681c3be6-ed96-4ee6-96e2-b0889b03e720" tilewidth="24" tileheight="24" tilecount="96" columns="8">
- <image source="../Downloads/just business assets/floor_tiles_2.png" width="192" height="288"/>
+ <image source="floor_tiles_2.png" width="192" height="288"/>
  <tile id="36">
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="2.89559" height="24.0791"/>
