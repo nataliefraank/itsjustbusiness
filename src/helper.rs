@@ -1,5 +1,5 @@
 // use bevy::input::keyboard::KeyCode;
-use bevy::prelude::*;
+use bevy::{prelude::*, transform};
 // use bevy::window::PrimaryWindow;
 use bevy_ecs_tiled::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
@@ -27,7 +27,7 @@ pub fn load_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Spawn a sprite with the correct texture path
     commands.spawn(SpriteBundle {
         texture: asset_server.load("janitor-v1.png"),
-        transform: Transform::from_xyz(3.0, 3.0, 3.0),
+        transform: Transform::from_xyz(30.0, 3.0, 3.0),
         ..default()
     });
 }
@@ -38,10 +38,9 @@ pub fn load_tilemap(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Load the map: ensure any tile / tileset paths are relative to assets/ folder
     let map_handle: Handle<TiledMap> = asset_server.load("tilemap_level1.tmx");
-    let xf_pos567 = Transform::from_xyz(5.0, 6.0, 7.0);
 
     // Spawn the map with default options
     commands.spawn(TiledMapHandle(map_handle));
-
+    
     let map_handle = Transform::from_xyz(5.0, 6.0, 7.0);
 }
