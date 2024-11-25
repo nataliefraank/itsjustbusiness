@@ -5,6 +5,7 @@ use bevy_ecs_tiled::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 mod helper;
+mod playermovement;
 
 fn main() {
     App::new()
