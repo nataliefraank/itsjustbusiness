@@ -1,6 +1,6 @@
-use bevy::input::keyboard::KeyCode;
+// use bevy::input::keyboard::KeyCode;
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
+// use bevy::window::PrimaryWindow;
 use bevy_ecs_tiled::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
@@ -23,15 +23,15 @@ fn main() {
         .run();
 }
 
-fn load_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn load_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Spawn a sprite with the correct texture path
     commands.spawn(SpriteBundle {
-        texture: asset_server.load("janitor32x48.png"),
+        texture: asset_server.load("janitor-v1.png"),
         ..default()
     });
 }
 
-fn load_tilemap(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn load_tilemap(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Spawn a 2D camera
     commands.spawn(Camera2dBundle::default());
 
