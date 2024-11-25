@@ -27,6 +27,7 @@ pub fn load_sprite(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Spawn a sprite with the correct texture path
     commands.spawn(SpriteBundle {
         texture: asset_server.load("janitor-v1.png"),
+        transform: Transform::from_translation(Vec3::ZERO),
         ..default()
     });
 }
