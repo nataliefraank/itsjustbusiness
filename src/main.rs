@@ -7,6 +7,13 @@ use bevy_ecs_tilemap::prelude::*;
 mod helper;
 mod playermovement;
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
+enum MapState {
+    Loaded,
+    #[default]
+    Unloaded,
+}
+
 fn main() {
     App::new()
         // Bevy default plugins
@@ -31,32 +38,24 @@ fn main() {
 }
 
 fn startup(
-    commands: Commands,
-    commands2: Commands,
-    asset_server: Res<AssetServer>,
-    asset_server2: Res<AssetServer>,
+    mut commands: Commands,
+    mut asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<MapState>>,
 ) {
-    helper::load_sprite(commands, asset_server);
-    helper::load_tilemap(commands2, asset_server2);
+    helper::load_sprite(&mut commands, &mut asset_server);
+    helper::load_tilemap(&mut commands, &mut asset_server);
     next_state.set(MapState::Loaded);
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
-enum MapState {
-    Loaded,
-    #[default]
-    Unloaded,
 }
 
 fn handle_load(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    mut asset_server: Res<AssetServer>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut next_state: ResMut<NextState<MapState>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::KeyL) {
-        commands.spawn(TiledMapHandle(asset_server.load("tilemap_level1.tmx")));
+        helper::load_sprite(&mut commands, &mut asset_server);
+        helper::load_tilemap(&mut commands, &mut asset_server);
         next_state.set(MapState::Loaded);
     }
 }
