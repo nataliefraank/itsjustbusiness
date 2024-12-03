@@ -1,128 +1,224 @@
-use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
-
-use super::{FacingDirectionEnum, Movement, Player};
-
-pub fn player_movement_system(
-    keyboard: Res<Input<KeyCode>>,
-    mut query: Query<(
-        &mut Player,
-        &mut Movement,
-        &mut FacingDirection,
-        &mut Velocity,
-    )>,
-) {
-    for (_player, movement, mut direction, mut velocity) in query.iter_mut() {
-        let mut velocity_delta = Vec2::new(0.0, 0.0);
-        let mut x_delta = 0.0;
-        let mut y_delta = 0.0;
-        // Up
-        if keyboard.pressed(KeyCode::W) {
-            y_delta += 1.0;
-        }
-        // Down
-        else if keyboard.pressed(KeyCode::S) {
-            y_delta -= 1.0;
-        }
-        // Left
-        if keyboard.pressed(KeyCode::A) {
-            x_delta -= 1.0;
-        }
-        // Right
-        else if keyboard.pressed(KeyCode::D) {
-            x_delta += 1.0;
-        }
-
-        velocity_delta.x = x_delta;
-        velocity_delta.y = y_delta;
-
-        if velocity_delta != Vec2::ZERO {
-            // Normalize
-            velocity_delta /= velocity_delta.length();
-            velocity_delta *= movement.speed;
-        }
-
-        // Update facing direction
-        if velocity_delta.x != 0.0 {
-            if velocity_delta.x > 0.0 {
-                direction.direction = FacingDirectionEnum::Right;
-            } else {
-                direction.direction = FacingDirectionEnum::Left;
-            }
-        }
-
-        // Update the velocity on the rigid_body_component,
-        // the bevy_rapier plugin will update the Sprite transform.
-        velocity.linvel = velocity_delta;
-    }
-}
-
-// use bevy::a11y::accesskit::Point;
-// use bevy::input::common_conditions::{self, *};
 // use bevy::prelude::*;
+// use bevy_rapier2d::prelude::*;
+// pub mod camera;
+// pub use camera::*;
 
-// #[derive(Component)]
 // struct Player {
-//     position: Point,
-//     sprite: Rect,
-//     speed: i32,
+//     speed: f32,
+// }
+
+// struct Jumper {
+//     jump_impulse: f32,
+//     is_jumping: bool,
 // }
 
 // fn main() {
-//     // let mut app = App::new();
-//     App::new()
+//     App::build()
+//         .insert_resource(WindowDescriptor {
+//             title: "Platformer!".to_string(),
+//             width: 640.0,
+//             height: 400.0,
+//             vsync: true,
+//             ..Default::default()
+//         })
+//         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
+//         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+//         .add_startup_stage("player_setup", SystemStage::single(spawn_player.system()))
+//         .add_startup_stage("floor_setup", SystemStage::single(spawn_floor.system()))
+//         .add_system(player_jumps.system())
+//         .add_system(player_movement.system())
+//         .add_system(jump_reset.system())
 //         .add_plugins(DefaultPlugins)
-//         .add_systems(Startup, setup)
 //         .run();
 // }
 
-// // System for handling player movement
-// fn player_movement(
-//     keyboard_input: Res<ButtonInput<KeyCode>>,
-//     mut query: Query<&mut Transform, With<Player>>,
-// ) {
-//     let mut player_transform = query.single_mut();
-//     let mut direction = Vec3::ZERO;
-
-//     if keyboard_input.pressed(KeyCode::KeyW) {
-//         direction.y += 1.0;
-//     }
-//     if keyboard_input.pressed(KeyCode::KeyS) {
-//         direction.y -= 1.0;
-//     }
-//     if keyboard_input.pressed(KeyCode::KeyA) {
-//         direction.x -= 1.0;
-//     }
-//     if keyboard_input.pressed(KeyCode::KeyD) {
-//         direction.x += 1.0;
-//     }
-
-//     // Normalize direction to ensure consistent movement and scale with speed
-//     if direction.length_squared() > 0.0 {
-//         direction = direction.normalize();
-//     }
-
-//     let speed = 5.0;
-//     let delta_time = 1.0 / 60.0; // Assuming a fixed frame rate for simplicity
-//     player_transform.translation += direction * speed * delta_time;
-// }
-
-// fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+// fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
+//     let rigid_body = RigidBodyBundle {
+//         mass_properties: RigidBodyMassPropsFlags::ROTATION_LOCKED.into(),
+//         activation: RigidBodyActivation::cannot_sleep(),
+//         ccd: RigidBodyCcd {
+//             ccd_enabled: true,
+//             ..Default::default()
+//         },
+//         ..Default::default()
+//     };
+//     let collider = ColliderBundle {
+//         shape: ColliderShape::cuboid(0.5, 0.5),
+//         flags: ColliderFlags {
+//             active_events: ActiveEvents::CONTACT_EVENTS,
+//             ..Default::default()
+//         },
+//         ..Default::default()
+//     };
 //     commands
-//         .spawn(SpriteBundle {
-//             texture: asset_server.load("janitor-v1.png"),
-//             transform: Transform::from_xyz(30.0, 3.0, 0.0),
-//             ..default()
+//         .spawn_bundle(SpriteBundle {
+//             material: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
+//             sprite: Sprite::new(Vec2::new(1.0, 1.0)),
+//             ..Default::default()
 //         })
-//         .insert(Player {})
-//         .insert(TransformBundle::from(Transform::default()))
-//         .insert(VisibilityBundle::default());
-
-//     commands.spawn((
-//         Player {},
-//         Transform::default(),
-//         GlobalTransform::default(),
-//         Visibility::default(),
-//         InheritedVisibility::default(),
-//     ));
+//         .insert_bundle(rigid_body)
+//         .insert_bundle(collider)
+//         .insert(RigidBodyPositionSync::Discrete)
+//         .insert(Player { speed: 3.5 })
+//         .insert(Jumper {
+//             jump_impulse: 7.,
+//             is_jumping: false,
+//         })
+//         .with_children(|parent| {
+//             parent.spawn_bundle(new_camera_2d());
+//         });
 // }
+
+// fn player_jumps(
+//     keyboard_input: Res<Input<KeyCode>>,
+//     mut players: Query<(&mut Jumper, &mut RigidBodyVelocity), With<Player>>,
+// ) {
+//     for (mut jumper, mut velocity) in players.iter_mut() {
+//         if keyboard_input.pressed(KeyCode::Up) && !jumper.is_jumping {
+//             velocity.linvel = Vec2::new(0., jumper.jump_impulse).into();
+//             jumper.is_jumping = true
+//         }
+//     }
+// }
+
+// fn player_movement(
+//     keyboard_input: Res<Input<KeyCode>>,
+//     mut players: Query<(&Player, &mut RigidBodyVelocity)>,
+// ) {
+//     for (player, mut velocity) in players.iter_mut() {
+//         if keyboard_input.pressed(KeyCode::Left) {
+//             velocity.linvel = Vec2::new(-player.speed, velocity.linvel.y).into();
+//         }
+//         if keyboard_input.pressed(KeyCode::Right) {
+//             velocity.linvel = Vec2::new(player.speed, velocity.linvel.y).into();
+//         }
+//     }
+// }
+
+// fn spawn_floor(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
+//     let width = 10.;
+//     let height = 1.;
+//     let rigid_body = RigidBodyBundle {
+//         position: Vec2::new(0.0, -2.).into(),
+//         body_type: RigidBodyType::Static,
+//         ..Default::default()
+//     };
+//     let collider = ColliderBundle {
+//         shape: ColliderShape::cuboid(width / 2., height / 2.),
+//         ..Default::default()
+//     };
+//     commands
+//         .spawn_bundle(SpriteBundle {
+//             material: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
+//             sprite: Sprite::new(Vec2::new(width, height)),
+//             ..Default::default()
+//         })
+//         .insert_bundle(rigid_body)
+//         .insert_bundle(collider)
+//         .insert(RigidBodyPositionSync::Discrete);
+// }
+
+// fn jump_reset(
+//     mut query: Query<(Entity, &mut Jumper)>,
+//     mut contact_events: EventReader<ContactEvent>,
+// ) {
+//     for contact_event in contact_events.iter() {
+//         for (entity, mut jumper) in query.iter_mut() {
+//             if let ContactEvent::Started(h1, h2) = contact_event {
+//                 if h1.entity() == entity || h2.entity() == entity {
+//                     jumper.is_jumping = false
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// // // use bevy::a11y::accesskit::Point;
+// // use bevy::input::common_conditions::{self, *};
+// // use bevy::prelude::*;
+
+// // #[derive(Component)]
+// // // struct Player {
+// // //     position: Point,
+// // //     sprite: Rect,
+// // //     speed: i32,
+// // // }
+
+// // struct Player {
+// //     speed: f32,
+// // }
+
+// // fn main() {
+// //     // let mut app = App::new();
+// //     App::new()
+// //         .add_plugins(DefaultPlugins)
+// //         .add_systems(Startup, setup)
+// //         .add_system(player_movement.system())
+// //         .insert(Player { speed: 3.5 })
+// //         .run();
+// // }
+
+// // // System for handling player movement
+// // fn player_movement(
+// //     keyboard_input: Res<ButtonInput<KeyCode>>,
+// //     mut query: Query<&mut Transform, With<Player>>,
+// // ) {
+// //     let mut player_transform = query.single_mut();
+// //     let mut direction = Vec3::ZERO;
+
+// //     if keyboard_input.pressed(KeyCode::KeyW) {
+// //         direction.y += 1.0;
+// //     }
+// //     if keyboard_input.pressed(KeyCode::KeyS) {
+// //         direction.y -= 1.0;
+// //     }
+// //     if keyboard_input.pressed(KeyCode::KeyA) {
+// //         direction.x -= 1.0;
+// //     }
+// //     if keyboard_input.pressed(KeyCode::KeyD) {
+// //         direction.x += 1.0;
+// //     }
+
+// //     // Normalize direction to ensure consistent movement and scale with speed
+// //     if direction.length_squared() > 0.0 {
+// //         direction = direction.normalize();
+// //     }
+
+// //     let speed = 5.0;
+// //     let delta_time = 1.0 / 60.0; // Assuming a fixed frame rate for simplicity
+// //     player_transform.translation += direction * speed * delta_time;
+// // }
+
+// // fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+// //     commands
+// //         .spawn(SpriteBundle {
+// //             texture: asset_server.load("janitor-v1.png"),
+// //             transform: Transform::from_xyz(30.0, 3.0, 0.0),
+// //             ..default()
+// //         })
+// //         .with_children(|parent| {
+// //             parent.spawn(new_camera_2d());
+// //         })
+// //         // .insert(Player {
+// //         //     position: Point { x: 0.0, y: 0.0 },
+// //         //     sprite: Rect {
+// //         //         min: ,
+// //         //         max: todo!(),
+// //         //     },car
+// //         //     speed: 3,
+// //         // })
+// //         .insert(TransformBundle::from(Transform::default()))
+// //         .insert(VisibilityBundle::default());
+
+// //     commands.spawn((
+// //         // Player {
+// //         //     position: Point { x: 0.0, y: 0.0 },
+// //         //     sprite: Rect {},
+// //         //     speed: 3,
+// //         // },
+// //         Transform::default(),
+// //         GlobalTransform::default(),
+// //         Visibility::default(),
+// //         InheritedVisibility::default(),
+// //     ));
+// // }
