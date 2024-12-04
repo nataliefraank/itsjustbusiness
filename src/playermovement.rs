@@ -1,19 +1,13 @@
 // use bevy::prelude::*;
 // use bevy_rapier2d::prelude::*;
-// pub mod camera;
 // pub use camera::*;
 
 // struct Player {
 //     speed: f32,
 // }
 
-// struct Jumper {
-//     jump_impulse: f32,
-//     is_jumping: bool,
-// }
-
 // fn main() {
-//     App::build()
+//     App::new()
 //         .insert_resource(WindowDescriptor {
 //             title: "Platformer!".to_string(),
 //             width: 640.0,
@@ -22,7 +16,7 @@
 //             ..Default::default()
 //         })
 //         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
-//         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+//         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
 //         .add_startup_stage("player_setup", SystemStage::single(spawn_player.system()))
 //         .add_startup_stage("floor_setup", SystemStage::single(spawn_floor.system()))
 //         .add_system(player_jumps.system())
@@ -69,27 +63,15 @@
 //         });
 // }
 
-// fn player_jumps(
-//     keyboard_input: Res<Input<KeyCode>>,
-//     mut players: Query<(&mut Jumper, &mut RigidBodyVelocity), With<Player>>,
-// ) {
-//     for (mut jumper, mut velocity) in players.iter_mut() {
-//         if keyboard_input.pressed(KeyCode::Up) && !jumper.is_jumping {
-//             velocity.linvel = Vec2::new(0., jumper.jump_impulse).into();
-//             jumper.is_jumping = true
-//         }
-//     }
-// }
-
 // fn player_movement(
 //     keyboard_input: Res<Input<KeyCode>>,
 //     mut players: Query<(&Player, &mut RigidBodyVelocity)>,
 // ) {
 //     for (player, mut velocity) in players.iter_mut() {
-//         if keyboard_input.pressed(KeyCode::Left) {
+//         if keyboard_input.pressed(KeyCode::KeyW) {
 //             velocity.linvel = Vec2::new(-player.speed, velocity.linvel.y).into();
 //         }
-//         if keyboard_input.pressed(KeyCode::Right) {
+//         if keyboard_input.pressed(KeyCode::KeyA) {
 //             velocity.linvel = Vec2::new(player.speed, velocity.linvel.y).into();
 //         }
 //     }
@@ -108,7 +90,7 @@
 //         ..Default::default()
 //     };
 //     commands
-//         .spawn_bundle(SpriteBundle {
+//         .spawn(SpriteBundle {
 //             material: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
 //             sprite: Sprite::new(Vec2::new(width, height)),
 //             ..Default::default()

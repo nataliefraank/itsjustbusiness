@@ -1,191 +1,117 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 
-mod helper;
+mod playermovement;
+
+// Resource to store the map's size and tile size.
+#[derive(Resource)]
+struct MapInfo {
+    map_width: f32,
+    map_height: f32,
+}
 
 fn main() {
+    // Create a new application.
     App::new()
+        // Add Bevy default plugins.
         .add_plugins(DefaultPlugins)
+        // Add TileMap plugin.
         .add_plugins(TilemapPlugin)
+        .insert_resource(MapInfo {
+            map_width: 30.0,
+            map_height: 20.0,
+        })
+        // Add setup system.
         .add_systems(Startup, setup)
+        // Add camera system.
         .add_systems(Startup, spawn_camera)
+        .add_systems(Startup, scale_tilemap_to_screen)
         // Add bevy_ecs_tilemap plugin
         .add_plugins(TiledMapPlugin::default())
         .run();
 }
 
-// Resource to track asset loading state
-#[derive(Resource)]
-struct LoadingState {
-    tilemap_loaded: bool,
-}
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Load the tilemap handle
+// Loads tilemap and janitor sprite.
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    primary_window: Query<&Window, With<PrimaryWindow>>,
+) {
+    // Load the tilemap
     commands.spawn((
         TiledMapHandle(asset_server.load("tilemap_level1.tmx")),
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)), // Adjust these values
+        Transform::default(),
         GlobalTransform::default(),
     ));
+
+    // The tilemap is 20x30 tiles, each 24x24 pixels.
+    let map_tile_width = 30.0;
+    let map_tile_height = 20.0;
+    let tile_size = 24.0;
+
+    let map_width = map_tile_width * tile_size;
+    let map_height = map_tile_height * tile_size;
+
+    // Store the map info in a resource
+    commands.insert_resource(MapInfo {
+        map_width,
+        map_height,
+    });
 
     // Spawn the janitor sprite
     let janitor_texture: Handle<Image> = asset_server.load("janitor-v1.png");
     commands.spawn(SpriteBundle {
         texture: janitor_texture,
         transform: Transform {
-            translation: Vec3::new(-320.0, -320.0, 1.0), // Adjust based on your layout
+            translation: Vec3::new(360.0, 410.0, 1.0), // Adjust based on your layout
             ..Default::default()
         },
         ..Default::default()
     });
 
-    info!("Setup complete. Waiting for assets to load...");
+    info!("Setup complete. Map size: {}x{}", map_width, map_height);
 }
 
 fn spawn_camera(mut commands: Commands) {
     // Spawn a 2D camera
     commands.spawn(Camera2dBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1000.0)), // Adjust Z for depth
+        transform: Transform::from_translation(Vec3::new(350.0, 225.0, 1.0)), // Adjust Z for depth
+        // transform: Transform::from_scale(Vec3::splat(2.0)),
         ..Default::default()
     });
 }
 
-// //! This example demonstrates how to load and unload maps.
+fn scale_tilemap_to_screen(
+    mut query: Query<&mut Transform, With<TiledMapHandle>>,
+    primary_window: Query<&Window, With<PrimaryWindow>>,
+    map_info: Res<MapInfo>,
+) {
+    let window = primary_window.single();
+    let window_width = window.width();
+    let window_height = window.height();
 
-// use bevy::prelude::*;
-// use bevy_ecs_tiled::prelude::*;
-// use bevy_ecs_tilemap::prelude::*;
+    // Calculate the scale to fit the map to the screen
+    let scale_x = window_width / map_info.map_width;
+    let scale_y = window_height / map_info.map_height;
 
-// mod helper;
-// mod playermovement;
+    // Choose the smaller scale to ensure the entire map fits within the window
+    let scale = scale_x.min(scale_y);
 
-// #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
-// enum MapState {
-//     Loaded,
-//     #[default]
-//     Unloaded,
-// }
+    for mut transform in query.iter_mut() {
+        // Apply scaling
+        transform.scale = Vec3::splat(scale);
 
-// fn main() {
-//     App::new()
-//         // Bevy default plugins
-//         .add_plugins(DefaultPlugins)
-//         // Examples helper plugin (does not matter for this example)
-//         // .add_plugins(helper::HelperPlugin)
-//         // bevy_ecs_tilemap and bevy_ecs_tiled main plugins
-//         .add_plugins(TilemapPlugin)
-//         .add_plugins(TiledMapPlugin::default())
-//         // Add our systems and run the app!
-//         .init_state::<MapState>()
-//         .add_systems(Startup, startup)
-//         .add_systems(
-//             Update,
-//             (
-//                 handle_load.run_if(in_state(MapState::Unloaded)),
-//                 (handle_unload, handle_reload, handle_respawn).run_if(in_state(MapState::Loaded)),
-//             ),
-//         )
-//         .add_systems(Update, log_transitions)
-//         .run();
-// }
+        // Center the map on the screen
+        transform.translation = Vec3::new(
+            (window_width - map_info.map_width * scale) / 2.0,
+            (window_height - map_info.map_height * scale) / 2.0,
+            0.0,
+        );
+    }
 
-// fn startup(
-//     mut commands: Commands,
-//     mut asset_server: Res<AssetServer>,
-//     mut next_state: ResMut<NextState<MapState>>,
-// ) {
-//     helper::load_sprite(&mut commands, &mut asset_server);
-//     helper::load_tilemap(&mut commands, &mut asset_server);
-//     next_state.set(MapState::Loaded);
-// }
-
-// fn handle_load(
-//     mut commands: Commands,
-//     mut asset_server: Res<AssetServer>,
-//     keyboard_input: Res<ButtonInput<KeyCode>>,
-//     mut next_state: ResMut<NextState<MapState>>,
-// ) {
-//     if keyboard_input.just_pressed(KeyCode::KeyL) {
-//         helper::load_sprite(&mut commands, &mut asset_server);
-//         helper::load_tilemap(&mut commands, &mut asset_server);
-//         next_state.set(MapState::Loaded);
-//     }
-// }
-
-// fn handle_reload(
-//     mut commands: Commands,
-//     asset_server: Res<AssetServer>,
-//     keyboard_input: Res<ButtonInput<KeyCode>>,
-//     maps_query: Query<Entity, With<TiledMapMarker>>,
-//     mut next_state: ResMut<NextState<MapState>>,
-// ) {
-//     if keyboard_input.just_pressed(KeyCode::KeyK) {
-//         if let Ok(entity) = maps_query.get_single() {
-//             commands
-//                 .entity(entity)
-//                 .insert(TiledMapHandle(asset_server.load("tilemap_level1.tmx")));
-//         } else {
-//             warn!("Cannot reload: no map loaded ?");
-//         }
-
-//         next_state.set(MapState::Loaded);
-//     }
-// }
-
-// fn handle_unload(
-//     mut commands: Commands,
-//     mut maps: ResMut<Assets<TiledMap>>,
-//     keyboard_input: Res<ButtonInput<KeyCode>>,
-//     maps_query: Query<Entity, With<TiledMapMarker>>,
-//     mut next_state: ResMut<NextState<MapState>>,
-// ) {
-//     if keyboard_input.just_pressed(KeyCode::KeyU) {
-//         // This example shows that the map gets properly unloaded if the
-//         // `TiledMap` asset is removed.
-//         //
-//         // However, typically you would remove the map entity instead.
-//         let handles: Vec<_> = maps.iter().map(|(handle, _)| handle).collect();
-//         for handle in handles {
-//             // This will cause the map to unload.
-//             maps.remove(handle);
-//         }
-
-//         // Actually remove the entities, so that we can re-add later.
-//         // If we don't do this, the entity still exists and the map will not be
-//         // reloaded properly.
-//         for entity in maps_query.iter() {
-//             commands.entity(entity).despawn_recursive();
-//         }
-//         next_state.set(MapState::Unloaded);
-//     } else if keyboard_input.just_pressed(KeyCode::KeyI) {
-//         // Just remove the entities directly. This will also unload the map.
-//         for entity in maps_query.iter() {
-//             commands.entity(entity).despawn_recursive();
-//         }
-//         next_state.set(MapState::Unloaded);
-//     }
-// }
-
-// fn handle_respawn(
-//     mut commands: Commands,
-//     keyboard_input: Res<ButtonInput<KeyCode>>,
-//     maps_query: Query<Entity, With<TiledMapMarker>>,
-// ) {
-//     if keyboard_input.just_pressed(KeyCode::KeyR) {
-//         if let Ok(entity) = maps_query.get_single() {
-//             commands.entity(entity).insert(RespawnTiledMap);
-//         } else {
-//             warn!("Cannot respawn: no map loaded ?");
-//         }
-//     }
-// }
-
-// fn log_transitions(mut transitions: EventReader<StateTransitionEvent<MapState>>) {
-//     for transition in transitions.read() {
-//         info!(
-//             "transition: {:?} => {:?}",
-//             transition.exited, transition.entered
-//         );
-//     }
-// }
+    info!(
+        "Window size: {}x{}, Map size: {}x{}, Scale: {}",
+        window_width, window_height, map_info.map_width, map_info.map_height, scale
+    );
+}
