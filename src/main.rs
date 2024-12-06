@@ -1,6 +1,7 @@
 use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
+use r#move::{derive_z_from_y_after_move, move_camera, move_player};
 
 mod r#move;
 mod playermovement;
@@ -50,6 +51,15 @@ fn main() {
         .add_systems(Startup, scale_tilemap_to_screen)
         // Add bevy_ecs_tilemap plugin
         .add_plugins(TiledMapPlugin::default())
+        .add_systems(
+            Update,
+            (
+                move_player,
+                move_camera,
+                derive_z_from_y_after_move,
+                // collision_events,
+            ),
+        )
         .run();
 }
 
@@ -109,30 +119,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    // let mut camera_bundle = Camera2dBundle::default();
-    // change the settings we want to change:
-    // camera_bundle.projection.scale = 2.0;
-    // camera_bundle.transform.rotate_z(30f32.to_radians());
-    // ...
-
     // Spawn a 2D camera
-
     let mut our_camera = Camera2dBundle::default();
     our_camera.transform = Transform::from_xyz(350.0, 225.0, 1.0);
     our_camera.projection.scaling_mode = ScalingMode::FixedVertical(500.0);
-    //our_camera.projection.scaling_mode = ScalingMode::FixedHorizontal(1000.0);
 
     commands.spawn(our_camera);
-
-    // commands.spawn((
-    //     Camera2dBundle {
-    //         transform: Transform::from_xyz(350.0, 225.0, 1.0),
-
-    //         ..default()
-    //     },
-    //     // camera_bundle,
-    //     MyCameraMarker,
-    // ));
 }
 
 fn scale_tilemap_to_screen(
