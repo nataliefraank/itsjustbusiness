@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 
-mod playermovement;
+// mod playermovement;
 
 // Resource to store the map's size and tile size.
 #[derive(Resource)]
@@ -92,9 +92,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    let mut camera_bundle = Camera2dBundle::default();
+    // let mut camera_bundle = Camera2dBundle::default();
     // change the settings we want to change:
-    camera_bundle.projection.scale = 2.0;
+    // camera_bundle.projection.scale = 2.0;
     // camera_bundle.transform.rotate_z(30f32.to_radians());
     // ...
 
@@ -104,7 +104,7 @@ fn spawn_camera(mut commands: Commands) {
             transform: Transform::from_xyz(350.0, 225.0, 1.0),
             ..default()
         },
-        camera_bundle,
+        // camera_bundle,
         MyCameraMarker,
     ));
 }
