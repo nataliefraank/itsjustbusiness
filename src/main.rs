@@ -5,8 +5,37 @@ use r#move::{derive_z_from_y_after_move, move_camera, move_player};
 
 mod r#move;
 mod playermovement;
-
+mod mainmenu;
+use crate::mainmenu::MenuPlugin;
 // Resource to store the map's size and tile size.
+
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
+enum GameState {
+    #[default]
+    Menu,
+    Settings,
+    Playing,
+    Paused,
+    Exit,
+}
+
+#[derive(Resource)]
+struct RootEntity(Entity);
+
+fn despawn_state(mut commands: Commands, root: Res<RootEntity>) {
+    commands.entity(root.0).despawn_recursive();
+}
+
+fn quit_game(mut exit: EventWriter<AppExit>) {
+    exit.send(AppExit::Success);
+}
+
+fn create_camera(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
+}
+
+
+
 #[derive(Resource)]
 struct MapInfo {
     map_width: f32,
@@ -38,8 +67,15 @@ fn main() {
     App::new()
         // Add Bevy default plugins.
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+
+        .init_state::<GameState>()
+        // Add MenuPlugin
         // Add TileMap plugin.
-        .add_plugins(TilemapPlugin)
+        .add_plugins((
+            TilemapPlugin,
+            MenuPlugin,
+        ))
+
         .insert_resource(MapInfo {
             map_width: 30.0,
             map_height: 20.0,
