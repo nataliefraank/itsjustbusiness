@@ -2,6 +2,7 @@ use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 
+mod r#move;
 mod playermovement;
 
 // Resource to store the map's size and tile size.
@@ -15,17 +16,17 @@ struct MapInfo {
 struct Player {
     position: Position,
     sprite: SpriteBundle,
-    speed: Speed
+    speed: Speed,
 }
 
 #[derive(Component)]
 struct Position {
-    position: Vec<f32>
+    position: Vec<f32>,
 }
 
 #[derive(Component)]
 struct Speed {
-    speed: i32
+    speed: i32,
 }
 
 #[derive(Component)]
@@ -83,7 +84,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn(player_sprite_obj);
 
-
     // commands.spawn(SpriteBundle {
     //     texture: janitor_texture,
     //     transform: Transform {
@@ -121,9 +121,8 @@ fn spawn_camera(mut commands: Commands) {
     our_camera.transform = Transform::from_xyz(350.0, 225.0, 1.0);
     our_camera.projection.scaling_mode = ScalingMode::FixedVertical(500.0);
     //our_camera.projection.scaling_mode = ScalingMode::FixedHorizontal(1000.0);
-    
-    commands.spawn(our_camera);
 
+    commands.spawn(our_camera);
 
     // commands.spawn((
     //     Camera2dBundle {
