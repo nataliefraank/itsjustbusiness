@@ -1,118 +1,106 @@
 // use bevy::prelude::*;
 // use bevy_rapier2d::prelude::*;
-// pub use camera::*;
 
-
-
-
-
+// #[derive(Component)]
+// struct Player {
+//     speed: f32,
+// }
 
 // fn main() {
 //     App::new()
-//         .insert_resource(WindowDescriptor {
-//             title: "Platformer!".to_string(),
-//             width: 640.0,
-//             height: 400.0,
-//             vsync: true,
-//             ..Default::default()
-//         })
-//         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
+//         .add_plugins(DefaultPlugins.set(WindowPlugin {
+//             primary_window: Some(Window {
+//                 title: "It's Just Business".to_string(),
+//                 resolution: (640.0, 400.0).into(),
+//                 present_mode: bevy::window::PresentMode::AutoVsync,
+//                 ..default()
+//             }),
+//             ..default()
+//         }))
+//         .insert_resource(ClearColor(Color::srgb(0.04, 0.04, 0.04)))
 //         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-//         .add_systems("player_setup", SystemStage::single(spawn_player.system()))
-//         .add_systems("floor_setup", SystemStage::single(spawn_floor.system()))
-//         .add_systems(player_jumps.system(), Startup)
-//         .add_systems(player_movement.system(), Update)
-//         .add_systems(jump_reset.system(), Startup)
+//         .add_systems(Startup, spawn_player)
+//         .add_systems(Startup, spawn_floor)
 //         .add_plugins(DefaultPlugins)
 //         .run();
 // }
 
-// fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
-//     let rigid_body = RigidBodyBundle {
-//         mass_properties: RigidBodyMassPropsFlags::ROTATION_LOCKED.into(),
-//         activation: RigidBodyActivation::cannot_sleep(),
-//         ccd: RigidBodyCcd {
-//             ccd_enabled: true,
-//             ..Default::default()
-//         },
-//         ..Default::default()
-//     };
-//     let collider = ColliderBundle {
-//         shape: ColliderShape::cuboid(0.5, 0.5),
-//         flags: ColliderFlags {
-//             active_events: ActiveEvents::CONTACT_FORCE_EVENTS,
-//             ..Default::default()
-//         },
-//         ..Default::default()
-//     };
+// fn spawn_player(
+//     mut commands: Commands,
+//     asset_server: Res<AssetServer>,
+//     mut materials: ResMut<Assets<ColorMaterial>>,
+// ) {
+//     let rigid_body = RigidBody::Dynamic;
+//     let collider = Collider::cuboid(0.5, 0.5);
+
 //     commands
 //         .spawn(SpriteBundle {
-//             sprite: Sprite::from_image(asset_server.load("janitor-v1.png")),
-//             ..Default::default()
+//             texture: asset_server.load("janitor-v1.png"),
+//             transform: Transform::from_xyz(0.0, 0.0, 0.0),
+//             ..default()
 //         })
 //         .insert(rigid_body)
 //         .insert(collider)
-//         .insert(RigidBodyPositionSync::Discrete)
-//         .insert(Player { speed: 3.5 })
-//         .insert(Jumper {
-//             jump_impulse: 7.,
-//             is_jumping: false,
-//         })
-//         .with_children(|parent| {
-//             parent.spawn(new_camera_2d());
-//         });
+//         .insert(Velocity::zero())
+//         .insert(Player { speed: 200.0 })
+//         .insert(RigidBody::Dynamic)
+//         .insert(Player { speed: 3.5 });
+
+//     // This uses a camera which we haven't spawned in this mod.
+//     // .with_children(|parent| {
+//     //     parent.spawn(new_camera_2d());
+//     // });
 // }
 
 // fn player_movement(
-//     keyboard_input: Res<Input<KeyCode>>,
-//     mut players: Query<(&Player, &mut RigidBodyVelocity)>,
+//     keyboard_input: Res<Input<KeyCode>>, // Use Input for keyboard input
+//     time: Res<Time>,                     // Use Time for frame time
+//     mut query: Query<(&Player, &mut Velocity)>, // Query for player components
 // ) {
-//     for (player, mut velocity) in players.iter_mut() {
+//     for (player, mut velocity) in query.iter_mut() {
+//         let mut direction: Vec2 = Vec2::ZERO;
+
 //         if keyboard_input.pressed(KeyCode::KeyW) {
-//             velocity.linvel = Vec2::new(-player.speed, velocity.linvel.y).into();
+//             direction.y += 1.0;
+//         }
+//         if keyboard_input.pressed(KeyCode::KeyS) {
+//             direction.y -= 1.0;
 //         }
 //         if keyboard_input.pressed(KeyCode::KeyA) {
-//             velocity.linvel = Vec2::new(player.speed, velocity.linvel.y).into();
+//             direction.x -= 1.0;
 //         }
+//         if keyboard_input.pressed(KeyCode::KeyD) {
+//             direction.x += 1.0;
+//         }
+
+//         if direction.length_squared() > 0.0 {
+//             direction = direction.normalize();
+//         }
+
+//         velocity.linvel = direction * player.speed * time.delta_seconds();
 //     }
 // }
 
-// fn spawn_floor(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
+// fn spawn_floor(
+//     mut commands: Commands,
+//     asset_server: Res<AssetServer>,
+//     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+// ) {
 //     let width = 10.;
 //     let height = 1.;
-//     let rigid_body = RigidBodyBundle {
-//         position: Vec2::new(0.0, -2.).into(),
-//         body_type: RigidBodyType::Static,
-//         ..Default::default()
-//     };
-//     let collider = ColliderBundle {
-//         shape: ColliderShape::cuboid(width / 2., height / 2.),
-//         ..Default::default()
-//     };
+
+//     let rigid_body = RigidBody::Dynamic;
+//     let collider = Collider::cuboid(0.5, 0.5);
+
 //     commands
 //         .spawn(SpriteBundle {
-//             material: materials.add(Color(0.7, 0.7, 0.7).into()),
+//             //material: materials.add(Color(0.7, 0.7, 0.7).into()),
 //             sprite: Sprite::new(Vec2::new(width, height)),
 //             ..Default::default()
 //         })
 //         .insert(rigid_body)
 //         .insert(collider)
 //         .insert(RigidBodyPositionSync::Discrete);
-// }
-
-// fn jump_reset(
-//     mut query: Query<(Entity, &mut Jumper)>,
-//     mut contact_events: EventReader<ContactEvent>,
-// ) {
-//     for contact_event in contact_events.iter() {
-//         for (entity, mut jumper) in query.iter_mut() {
-//             if let ContactEvent::Started(h1, h2) = contact_event {
-//                 if h1.entity() == entity || h2.entity() == entity {
-//                     jumper.is_jumping = false
-//                 }
-//             }
-//         }
-//     }
 // }
 
 // // // use bevy::a11y::accesskit::Point;
@@ -125,10 +113,6 @@
 // // //     sprite: Rect,
 // // //     speed: i32,
 // // // }
-
-// // struct Player {
-// //     speed: f32,
-// // }
 
 // // fn main() {
 // //     // let mut app = App::new();
@@ -192,4 +176,20 @@
 // //         .insert(TransformBundle::from(Transform::default()))
 // //         .insert(VisibilityBundle::default());
 
-    
+// // let rigid_body = RigidBodyBundle {
+// //     mass_properties: RigidBodyMassPropsFlags::ROTATION_LOCKED.into(),
+// //     activation: RigidBodyActivation::cannot_sleep(),
+// //     ccd: RigidBodyCcd {
+// //         ccd_enabled: true,
+// //         ..Default::default()
+// //     },
+// //     ..Default::default()
+// // };
+// // let collider = ColliderBundle {
+// //     shape: ColliderShape::cuboid(0.5, 0.5),
+// //     flags: ColliderFlags {
+// //         active_events: ActiveEvents::CONTACT_FORCE_EVENTS,
+// //         ..Default::default()
+// //     },
+// //     ..Default::default()
+// // };
