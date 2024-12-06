@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 
@@ -109,14 +109,23 @@ fn spawn_camera(mut commands: Commands) {
     // ...
 
     // Spawn a 2D camera
-    commands.spawn((
-        Camera2dBundle {
-            transform: Transform::from_xyz(350.0, 225.0, 1.0),
-            ..default()
-        },
-        // camera_bundle,
-        MyCameraMarker,
-    ));
+
+    let mut our_camera = Camera2dBundle::default();
+    our_camera.transform = Transform::from_xyz(350.0, 225.0, 1.0);
+    our_camera.projection.scaling_mode = ScalingMode::FixedVertical(500.0);
+    
+    commands.spawn(our_camera);
+
+
+    // commands.spawn((
+    //     Camera2dBundle {
+    //         transform: Transform::from_xyz(350.0, 225.0, 1.0),
+
+    //         ..default()
+    //     },
+    //     // camera_bundle,
+    //     MyCameraMarker,
+    // ));
 }
 
 fn scale_tilemap_to_screen(
