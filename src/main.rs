@@ -11,11 +11,21 @@ struct MapInfo {
     map_height: f32,
 }
 
-#[derive(Component)]
+#[derive(Bundle)]
 struct Player {
-    position: Vec<i32>,
-    sprite: String,
-    speed: f32,
+    position: Position,
+    sprite: SpriteBundle,
+    speed: Speed
+}
+
+#[derive(Component)]
+struct Position {
+    position: Vec<f32>
+}
+
+#[derive(Component)]
+struct Speed {
+    speed: i32
 }
 
 #[derive(Component)]
