@@ -11,6 +11,9 @@ struct MapInfo {
     map_height: f32,
 }
 
+#[derive(Component)]
+struct MyCameraMarker;
+
 fn main() {
     // Create a new application.
     App::new()
@@ -33,11 +36,7 @@ fn main() {
 }
 
 // Loads tilemap and janitor sprite.
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    primary_window: Query<&Window, With<PrimaryWindow>>,
-) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Load the tilemap
     commands.spawn((
         TiledMapHandle(asset_server.load("tilemap_level1.tmx")),
@@ -74,12 +73,21 @@ fn setup(
 }
 
 fn spawn_camera(mut commands: Commands) {
+    let mut camera_bundle = Camera2dBundle::default();
+    // change the settings we want to change:
+    camera_bundle.projection.scale = 2.0;
+    // camera_bundle.transform.rotate_z(30f32.to_radians());
+    // ...
+
     // Spawn a 2D camera
-    commands.spawn(Camera2dBundle {
-        transform: Transform::from_translation(Vec3::new(350.0, 225.0, 1.0)), // Adjust Z for depth
-        // transform: Transform::from_scale(Vec3::splat(2.0)),
-        ..Default::default()
-    });
+    commands.spawn((
+        Camera2dBundle {
+            transform: Transform::from_xyz(350.0, 225.0, 1.0),
+            ..default()
+        },
+        camera_bundle,
+        MyCameraMarker,
+    ));
 }
 
 fn scale_tilemap_to_screen(

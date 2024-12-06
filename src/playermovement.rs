@@ -2,6 +2,7 @@
 // use bevy_rapier2d::prelude::*;
 // pub use camera::*;
 
+// #[derive(Component)]
 // struct Player {
 //     speed: f32,
 // }
@@ -17,11 +18,11 @@
 //         })
 //         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
 //         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-//         .add_startup_stage("player_setup", SystemStage::single(spawn_player.system()))
-//         .add_startup_stage("floor_setup", SystemStage::single(spawn_floor.system()))
-//         .add_system(player_jumps.system())
-//         .add_system(player_movement.system())
-//         .add_system(jump_reset.system())
+//         .add_systems("player_setup", SystemStage::single(spawn_player.system()))
+//         .add_systems("floor_setup", SystemStage::single(spawn_floor.system()))
+//         .add_systems(player_jumps.system(), Startup)
+//         .add_systems(player_movement.system(), Update)
+//         .add_systems(jump_reset.system(), Startup)
 //         .add_plugins(DefaultPlugins)
 //         .run();
 // }
@@ -39,19 +40,18 @@
 //     let collider = ColliderBundle {
 //         shape: ColliderShape::cuboid(0.5, 0.5),
 //         flags: ColliderFlags {
-//             active_events: ActiveEvents::CONTACT_EVENTS,
+//             active_events: ActiveEvents::CONTACT_FORCE_EVENTS,
 //             ..Default::default()
 //         },
 //         ..Default::default()
 //     };
 //     commands
-//         .spawn_bundle(SpriteBundle {
-//             material: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
-//             sprite: Sprite::new(Vec2::new(1.0, 1.0)),
+//         .spawn(SpriteBundle {
+//             sprite: Sprite::from_image(asset_server.load("janitor-v1.png")),
 //             ..Default::default()
 //         })
-//         .insert_bundle(rigid_body)
-//         .insert_bundle(collider)
+//         .insert(rigid_body)
+//         .insert(collider)
 //         .insert(RigidBodyPositionSync::Discrete)
 //         .insert(Player { speed: 3.5 })
 //         .insert(Jumper {
@@ -59,7 +59,7 @@
 //             is_jumping: false,
 //         })
 //         .with_children(|parent| {
-//             parent.spawn_bundle(new_camera_2d());
+//             parent.spawn(new_camera_2d());
 //         });
 // }
 
@@ -91,12 +91,12 @@
 //     };
 //     commands
 //         .spawn(SpriteBundle {
-//             material: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
+//             material: materials.add(Color(0.7, 0.7, 0.7).into()),
 //             sprite: Sprite::new(Vec2::new(width, height)),
 //             ..Default::default()
 //         })
-//         .insert_bundle(rigid_body)
-//         .insert_bundle(collider)
+//         .insert(rigid_body)
+//         .insert(collider)
 //         .insert(RigidBodyPositionSync::Discrete);
 // }
 
@@ -115,92 +115,92 @@
 //     }
 // }
 
-// // // use bevy::a11y::accesskit::Point;
-// // use bevy::input::common_conditions::{self, *};
-// // use bevy::prelude::*;
+// // // // use bevy::a11y::accesskit::Point;
+// // // use bevy::input::common_conditions::{self, *};
+// // // use bevy::prelude::*;
 
-// // #[derive(Component)]
+// // // #[derive(Component)]
+// // // // struct Player {
+// // // //     position: Point,
+// // // //     sprite: Rect,
+// // // //     speed: i32,
+// // // // }
+
 // // // struct Player {
-// // //     position: Point,
-// // //     sprite: Rect,
-// // //     speed: i32,
+// // //     speed: f32,
 // // // }
 
-// // struct Player {
-// //     speed: f32,
-// // }
+// // // fn main() {
+// // //     // let mut app = App::new();
+// // //     App::new()
+// // //         .add_plugins(DefaultPlugins)
+// // //         .add_systems(Startup, setup)
+// // //         .add_system(player_movement.system())
+// // //         .insert(Player { speed: 3.5 })
+// // //         .run();
+// // // }
 
-// // fn main() {
-// //     // let mut app = App::new();
-// //     App::new()
-// //         .add_plugins(DefaultPlugins)
-// //         .add_systems(Startup, setup)
-// //         .add_system(player_movement.system())
-// //         .insert(Player { speed: 3.5 })
-// //         .run();
-// // }
+// // // // System for handling player movement
+// // // fn player_movement(
+// // //     keyboard_input: Res<ButtonInput<KeyCode>>,
+// // //     mut query: Query<&mut Transform, With<Player>>,
+// // // ) {
+// // //     let mut player_transform = query.single_mut();
+// // //     let mut direction = Vec3::ZERO;
 
-// // // System for handling player movement
-// // fn player_movement(
-// //     keyboard_input: Res<ButtonInput<KeyCode>>,
-// //     mut query: Query<&mut Transform, With<Player>>,
-// // ) {
-// //     let mut player_transform = query.single_mut();
-// //     let mut direction = Vec3::ZERO;
+// // //     if keyboard_input.pressed(KeyCode::KeyW) {
+// // //         direction.y += 1.0;
+// // //     }
+// // //     if keyboard_input.pressed(KeyCode::KeyS) {
+// // //         direction.y -= 1.0;
+// // //     }
+// // //     if keyboard_input.pressed(KeyCode::KeyA) {
+// // //         direction.x -= 1.0;
+// // //     }
+// // //     if keyboard_input.pressed(KeyCode::KeyD) {
+// // //         direction.x += 1.0;
+// // //     }
 
-// //     if keyboard_input.pressed(KeyCode::KeyW) {
-// //         direction.y += 1.0;
-// //     }
-// //     if keyboard_input.pressed(KeyCode::KeyS) {
-// //         direction.y -= 1.0;
-// //     }
-// //     if keyboard_input.pressed(KeyCode::KeyA) {
-// //         direction.x -= 1.0;
-// //     }
-// //     if keyboard_input.pressed(KeyCode::KeyD) {
-// //         direction.x += 1.0;
-// //     }
+// // //     // Normalize direction to ensure consistent movement and scale with speed
+// // //     if direction.length_squared() > 0.0 {
+// // //         direction = direction.normalize();
+// // //     }
 
-// //     // Normalize direction to ensure consistent movement and scale with speed
-// //     if direction.length_squared() > 0.0 {
-// //         direction = direction.normalize();
-// //     }
+// // //     let speed = 5.0;
+// // //     let delta_time = 1.0 / 60.0; // Assuming a fixed frame rate for simplicity
+// // //     player_transform.translation += direction * speed * delta_time;
+// // // }
 
-// //     let speed = 5.0;
-// //     let delta_time = 1.0 / 60.0; // Assuming a fixed frame rate for simplicity
-// //     player_transform.translation += direction * speed * delta_time;
-// // }
+// // // fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+// // //     commands
+// // //         .spawn(SpriteBundle {
+// // //             texture: asset_server.load("janitor-v1.png"),
+// // //             transform: Transform::from_xyz(30.0, 3.0, 0.0),
+// // //             ..default()
+// // //         })
+// // //         .with_children(|parent| {
+// // //             parent.spawn(new_camera_2d());
+// // //         })
+// // //         // .insert(Player {
+// // //         //     position: Point { x: 0.0, y: 0.0 },
+// // //         //     sprite: Rect {
+// // //         //         min: ,
+// // //         //         max: todo!(),
+// // //         //     },car
+// // //         //     speed: 3,
+// // //         // })
+// // //         .insert(TransformBundle::from(Transform::default()))
+// // //         .insert(VisibilityBundle::default());
 
-// // fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-// //     commands
-// //         .spawn(SpriteBundle {
-// //             texture: asset_server.load("janitor-v1.png"),
-// //             transform: Transform::from_xyz(30.0, 3.0, 0.0),
-// //             ..default()
-// //         })
-// //         .with_children(|parent| {
-// //             parent.spawn(new_camera_2d());
-// //         })
-// //         // .insert(Player {
-// //         //     position: Point { x: 0.0, y: 0.0 },
-// //         //     sprite: Rect {
-// //         //         min: ,
-// //         //         max: todo!(),
-// //         //     },car
-// //         //     speed: 3,
-// //         // })
-// //         .insert(TransformBundle::from(Transform::default()))
-// //         .insert(VisibilityBundle::default());
-
-// //     commands.spawn((
-// //         // Player {
-// //         //     position: Point { x: 0.0, y: 0.0 },
-// //         //     sprite: Rect {},
-// //         //     speed: 3,
-// //         // },
-// //         Transform::default(),
-// //         GlobalTransform::default(),
-// //         Visibility::default(),
-// //         InheritedVisibility::default(),
-// //     ));
-// // }
+// // //     commands.spawn((
+// // //         // Player {
+// // //         //     position: Point { x: 0.0, y: 0.0 },
+// // //         //     sprite: Rect {},
+// // //         //     speed: 3,
+// // //         // },
+// // //         Transform::default(),
+// // //         GlobalTransform::default(),
+// // //         Visibility::default(),
+// // //         InheritedVisibility::default(),
+// // //     ));
+// // // }
