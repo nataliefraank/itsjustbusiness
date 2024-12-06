@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 
-// mod playermovement;
+mod playermovement;
 
 // Resource to store the map's size and tile size.
 #[derive(Resource)]
