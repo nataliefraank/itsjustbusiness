@@ -35,7 +35,7 @@ fn main() {
     // Create a new application.
     App::new()
         // Add Bevy default plugins.
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         // Add TileMap plugin.
         .add_plugins(TilemapPlugin)
         .insert_resource(MapInfo {
@@ -113,6 +113,7 @@ fn spawn_camera(mut commands: Commands) {
     let mut our_camera = Camera2dBundle::default();
     our_camera.transform = Transform::from_xyz(350.0, 225.0, 1.0);
     our_camera.projection.scaling_mode = ScalingMode::FixedVertical(500.0);
+    //our_camera.projection.scaling_mode = ScalingMode::FixedHorizontal(1000.0);
     
     commands.spawn(our_camera);
 
