@@ -2,10 +2,10 @@
 // use bevy_rapier2d::prelude::*;
 // pub use camera::*;
 
-// #[derive(Component)]
-// struct Player {
-//     speed: f32,
-// }
+
+
+
+
 
 // fn main() {
 //     App::new()
@@ -192,15 +192,4 @@
 // // //         .insert(TransformBundle::from(Transform::default()))
 // // //         .insert(VisibilityBundle::default());
 
-// // //     commands.spawn((
-// // //         // Player {
-// // //         //     position: Point { x: 0.0, y: 0.0 },
-// // //         //     sprite: Rect {},
-// // //         //     speed: 3,
-// // //         // },
-// // //         Transform::default(),
-// // //         GlobalTransform::default(),
-// // //         Visibility::default(),
-// // //         InheritedVisibility::default(),
-// // //     ));
-// // // }
+    

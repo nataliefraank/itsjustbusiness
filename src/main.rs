@@ -12,6 +12,13 @@ struct MapInfo {
 }
 
 #[derive(Component)]
+struct Player {
+    position: Vec<i32>,
+    sprite: String,
+    speed: f32,
+}
+
+#[derive(Component)]
 struct MyCameraMarker;
 
 fn main() {
@@ -68,6 +75,18 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         ..Default::default()
     });
+
+    // commands.spawn((
+    //     Player {
+    //         position: Point { x: 0.0, y: 0.0 },
+    //         sprite: Rect {},
+    //         speed: 3,
+    //     },
+    //     Transform::default(),
+    //     GlobalTransform::default(),
+    //     Visibility::default(),
+    //     InheritedVisibility::default(),
+    // ));
 
     info!("Setup complete. Map size: {}x{}", map_width, map_height);
 }
