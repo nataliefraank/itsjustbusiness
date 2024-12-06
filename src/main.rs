@@ -77,14 +77,21 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Spawn the janitor sprite
     let janitor_texture: Handle<Image> = asset_server.load("janitor-v1.png");
-    commands.spawn(SpriteBundle {
-        texture: janitor_texture,
-        transform: Transform {
-            translation: Vec3::new(360.0, 410.0, 1.0), // Adjust based on your layout
-            ..Default::default()
-        },
-        ..Default::default()
-    });
+    let mut player_sprite_obj = SpriteBundle::default();
+    player_sprite_obj.texture = janitor_texture;
+    player_sprite_obj.transform = Transform::from_xyz(360.0, 410.0, 1.0);
+
+    commands.spawn(player_sprite_obj);
+
+
+    // commands.spawn(SpriteBundle {
+    //     texture: janitor_texture,
+    //     transform: Transform {
+    //         translation: Vec3::new(360.0, 410.0, 1.0), // Adjust based on your layout
+    //         ..Default::default()
+    //     },
+    //     ..Default::default()
+    // });
 
     // commands.spawn((
     //     Player {
