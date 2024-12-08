@@ -3,13 +3,14 @@ use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 use r#move::{derive_z_from_y_after_move, move_camera, move_player};
 
-mod r#move;
-mod playermovement;
 mod mainmenu;
+// mod r#move;
+// mod move2;
+// mod playermovement;
 use crate::mainmenu::MenuPlugin;
 // Resource to store the map's size and tile size.
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
+// #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 enum GameState {
     #[default]
     Menu,
@@ -34,32 +35,30 @@ fn create_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-
-
-#[derive(Resource)]
+// #[derive(Resource)]
 struct MapInfo {
     map_width: f32,
     map_height: f32,
 }
 
-#[derive(Bundle)]
+// #[derive(Bundle)]
 struct Player {
     position: Position,
     sprite: SpriteBundle,
     speed: Speed,
 }
 
-#[derive(Component)]
+// #[derive(Component)]
 struct Position {
     position: Vec<f32>,
 }
 
-#[derive(Component)]
+// #[derive(Component)]
 struct Speed {
     speed: i32,
 }
 
-#[derive(Component)]
+// #[derive(Component)]
 struct MyCameraMarker;
 
 fn main() {
@@ -67,15 +66,11 @@ fn main() {
     App::new()
         // Add Bevy default plugins.
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
-
         .init_state::<GameState>()
+        .add_plugins(TweeningPlugin)
         // Add MenuPlugin
         // Add TileMap plugin.
-        .add_plugins((
-            TilemapPlugin,
-            MenuPlugin,
-        ))
-
+        .add_plugins((TilemapPlugin, MenuPlugin))
         .insert_resource(MapInfo {
             map_width: 30.0,
             map_height: 20.0,
@@ -87,15 +82,16 @@ fn main() {
         .add_systems(Startup, scale_tilemap_to_screen)
         // Add bevy_ecs_tilemap plugin
         .add_plugins(TiledMapPlugin::default())
-        .add_systems(
-            Update,
-            (
-                move_player,
-                move_camera,
-                derive_z_from_y_after_move,
-                // collision_events,
-            ),
-        )
+        .add_systems(Update, spriteMove)
+        // .add_systems(
+        //     Update,
+        //     (
+        //         // move_player,
+        //         // move_camera,
+        //         // derive_z_from_y_after_move,
+        //         // collision_events,
+        //     ),
+        // )
         .run();
 }
 
@@ -195,4 +191,28 @@ fn scale_tilemap_to_screen(
         "Window size: {}x{}, Map size: {}x{}, Scale: {}",
         window_width, window_height, map_info.map_width, map_info.map_height, scale
     );
+}
+
+fn spriteMove(commands: Commands, sprite: SpriteBundle) {
+    // Create a single animation (tween) to move an entity.
+    let tween = Tween::new(
+        // Use a quadratic easing on both endpoints.
+        EaseFunction::QuadraticInOut,
+        // Animation time.
+        Duration::from_secs(1),
+        // The lens gives access to the Transform component of the Entity,
+        // for the Animator to animate it. It also contains the start and
+        // end values respectively associated with the progress ratios 0. and 1.
+        TransformPositionLens {
+            start: Vec3::ZERO,
+            end: Vec3::new(1., 2., -4.),
+        },
+    );
+
+    commands.spawn((
+        // Spawn an entity to animate the position of.
+        TransformBundle::default(),
+        // Add an Animator component to control and execute the animation.
+        Animator::new(tween),
+    ));
 }
