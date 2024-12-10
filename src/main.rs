@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
+use bevy::{prelude::*, render::camera::ScalingMode, transform::commands, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_tweening::Tween;
@@ -349,4 +349,16 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
         id: id,
         timer: Timer::from_seconds(0.25, TimerMode::Once),
     });
+}
+
+
+fn spawn_task(mut commands: Commands, asset_server: Res<AssetServer>){
+    let planttexture: Handle<Image> = asset_server.load("plant_asset1.png");
+    let mut plant_object = SpriteBundle::default();
+
+    plant_object.texture = planttexture;
+
+    plant_object.transform = Transform::from_xyz(100.0, 410.0, 1.0);
+    commands.spawn(plant_object);
+    
 }
