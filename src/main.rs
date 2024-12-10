@@ -312,7 +312,7 @@ fn keyboard_input(
 }
 
 fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    //commands.spawn(Camera2dBundle::default());
     let tween = Tween::new(
         EaseFunction::QuadraticInOut,
         Duration::from_secs(1),
