@@ -1,7 +1,21 @@
 use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
-use r#move::{derive_z_from_y_after_move, move_camera, move_player};
+// use r#move::{derive_z_from_y_after_move, move_camera, move_player};
+use core::time;
+use std::time::Duration;
+
+use bevy::{
+    ecs::{query, world},
+    math::vec3,
+    prelude::*,
+    reflect::utility::GenericTypeCell,
+    render::{camera, render_resource::Texture},
+    transform::{self, commands},
+    utils::tracing::span::Id,
+};
+use bevy_tweening::*;
+use lens::TransformPositionLens;
 
 mod mainmenu;
 // mod r#move;
@@ -10,7 +24,7 @@ mod mainmenu;
 use crate::mainmenu::MenuPlugin;
 // Resource to store the map's size and tile size.
 
-// #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 enum GameState {
     #[default]
     Menu,
@@ -35,25 +49,25 @@ fn create_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-// #[derive(Resource)]
+#[derive(Resource)]
 struct MapInfo {
     map_width: f32,
     map_height: f32,
 }
 
-// #[derive(Bundle)]
+#[derive(Bundle)]
 struct Player {
     position: Position,
     sprite: SpriteBundle,
     speed: Speed,
 }
 
-// #[derive(Component)]
+#[derive(Component)]
 struct Position {
     position: Vec<f32>,
 }
 
-// #[derive(Component)]
+#[derive(Component)]
 struct Speed {
     speed: i32,
 }
@@ -63,11 +77,12 @@ struct MyCameraMarker;
 
 fn main() {
     // Create a new application.
-    App::new()
+    App::default()
         // Add Bevy default plugins.
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .init_state::<GameState>()
         .add_plugins(TweeningPlugin)
+        .init_state::<GameState>()
         // Add MenuPlugin
         // Add TileMap plugin.
         .add_plugins((TilemapPlugin, MenuPlugin))
@@ -75,14 +90,16 @@ fn main() {
             map_width: 30.0,
             map_height: 20.0,
         })
+        .add_systems(Startup, (spawn_entity)) // Add a startup system to spawn the entity
         // Add setup system.
         .add_systems(Startup, setup)
         // Add camera system.
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, scale_tilemap_to_screen)
+        .add_systems(Update, keyboard_input)
         // Add bevy_ecs_tilemap plugin
         .add_plugins(TiledMapPlugin::default())
-        .add_systems(Update, spriteMove)
+        // .add_systems(Update, spriteMove)
         // .add_systems(
         //     Update,
         //     (
@@ -193,26 +210,169 @@ fn scale_tilemap_to_screen(
     );
 }
 
-fn spriteMove(commands: Commands, sprite: SpriteBundle) {
-    // Create a single animation (tween) to move an entity.
+// fn spriteMove(commands: Commands, sprite: SpriteBundle) {
+//     // Create a single animation (tween) to move an entity.
+//     let tween = Tween::new(
+//         // Use a quadratic easing on both endpoints.
+//         EaseFunction::QuadraticInOut,
+//         // Animation time.
+//         Duration::from_secs(1),
+//         // The lens gives access to the Transform component of the Entity,
+//         // for the Animator to animate it. It also contains the start and
+//         // end values respectively associated with the progress ratios 0. and 1.
+//         TransformPositionLens {
+//             start: Vec3::ZERO,
+//             end: Vec3::new(1., 2., -4.),
+//         },
+//     );
+
+//     commands.spawn((
+//         // Spawn an entity to animate the position of.
+//         TransformBundle::default(),
+//         // Add an Animator component to control and execute the animation.
+//         Animator::new(tween),
+//     ));
+// }
+
+#[derive(Resource)]
+struct PosVar {
+    pos_vec: Vec3,
+    id: Entity,
+    timer: Timer,
+    in_anim: bool,
+}
+
+fn keyboard_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    query: Query<&Transform>,
+    mut local: ResMut<PosVar>,
+    mut commands: Commands,
+    time: Res<Time>,
+) {
+    local.timer.tick(time.delta());
+    if local.timer.just_finished() {
+        local.in_anim = false;
+        print!("reset")
+    }
+    if !(local.in_anim) {
+        if keys.pressed(KeyCode::ArrowRight) {
+            let upd_pos = local.pos_vec + vec3(40., 0., 0.);
+            let tween = Tween::new(
+                // Use a quadratic easing on both endpoints.
+                EaseFunction::QuadraticInOut,
+                // Animation time (one way only; for ping-pong it takes 2 seconds
+                // to come back to start).
+                Duration::from_millis(250),
+                // The lens gives the Animator access to the Transform component,
+                // to animate it. It also contains the start and end values associated
+                // with the animation ratios 0. and 1.
+                TransformPositionLens {
+                    start: local.pos_vec,
+                    end: upd_pos,
+                },
+            );
+            println!("moving");
+
+            commands
+                .entity(local.id)
+                .remove::<Animator<Transform>>()
+                .insert(Animator::new(tween));
+            local.pos_vec = upd_pos;
+            local.timer.reset();
+            local.in_anim = true
+        } else if keys.pressed(KeyCode::ArrowLeft) {
+            let upd_pos = local.pos_vec + vec3(-40., 0., 0.);
+            let tween = Tween::new(
+                EaseFunction::QuadraticInOut,
+                Duration::from_millis(250),
+                TransformPositionLens {
+                    start: local.pos_vec,
+                    end: upd_pos,
+                },
+            );
+            println!("moving");
+
+            commands
+                .entity(local.id)
+                .remove::<Animator<Transform>>()
+                .insert(Animator::new(tween));
+            local.pos_vec = upd_pos;
+            local.timer.reset();
+            local.in_anim = true
+        } else if keys.pressed(KeyCode::ArrowDown) {
+            let upd_pos = local.pos_vec + vec3(0., -40., 0.);
+            let tween = Tween::new(
+                EaseFunction::QuadraticInOut,
+                Duration::from_millis(250),
+                TransformPositionLens {
+                    start: local.pos_vec,
+                    end: upd_pos,
+                },
+            );
+            println!("moving");
+
+            commands
+                .entity(local.id)
+                .remove::<Animator<Transform>>()
+                .insert(Animator::new(tween));
+            local.pos_vec = upd_pos;
+            local.timer.reset();
+            local.in_anim = true
+        } else if keys.pressed(KeyCode::ArrowUp) {
+            let upd_pos = local.pos_vec + vec3(0., 40., 0.);
+            let tween = Tween::new(
+                EaseFunction::QuadraticInOut,
+                Duration::from_millis(250),
+                TransformPositionLens {
+                    start: local.pos_vec,
+                    end: upd_pos,
+                },
+            );
+
+            println!("moving");
+
+            commands
+                .entity(local.id)
+                .remove::<Animator<Transform>>()
+                .insert(Animator::new(tween));
+            local.pos_vec = upd_pos;
+            local.timer.reset();
+            local.in_anim = true
+        }
+    }
+}
+
+fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(Camera2dBundle::default());
     let tween = Tween::new(
-        // Use a quadratic easing on both endpoints.
         EaseFunction::QuadraticInOut,
-        // Animation time.
         Duration::from_secs(1),
-        // The lens gives access to the Transform component of the Entity,
-        // for the Animator to animate it. It also contains the start and
-        // end values respectively associated with the progress ratios 0. and 1.
         TransformPositionLens {
             start: Vec3::ZERO,
-            end: Vec3::new(1., 2., -4.),
+            end: Vec3::new(0., 200., 0.),
         },
-    );
+    )
+    .with_repeat_count(RepeatCount::Finite(2))
+    .with_repeat_strategy(RepeatStrategy::MirroredRepeat);
 
-    commands.spawn((
-        // Spawn an entity to animate the position of.
-        TransformBundle::default(),
-        // Add an Animator component to control and execute the animation.
-        Animator::new(tween),
-    ));
+    let id = commands
+        .spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    color: bevy::color::Color::WHITE,
+                    custom_size: Some(Vec2::new(40., 40.)),
+                    ..default()
+                },
+
+                ..default()
+            },
+            Animator::new(tween),
+        ))
+        .id();
+    commands.insert_resource(PosVar {
+        in_anim: false,
+        pos_vec: Vec3::ZERO,
+        id: id,
+        timer: Timer::from_seconds(0.25, TimerMode::Once),
+    });
 }
