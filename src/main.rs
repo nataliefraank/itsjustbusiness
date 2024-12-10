@@ -76,7 +76,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .init_state::<GameState>()
         .init_state::<GameState>()
-        // .add_plugins(bevy_tweening::TweeningPlugin)
+        .add_plugins(bevy_tweening::TweeningPlugin)
         // Add MenuPlugin and TileMap plugin.
         .add_plugins((TilemapPlugin, MenuPlugin))
         .insert_resource(MapInfo {
