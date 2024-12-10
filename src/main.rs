@@ -91,7 +91,7 @@ fn main() {
             map_width: 30.0,
             map_height: 20.0,
         })
-        .add_systems(Startup, (spawn_entity)) // Add a startup system to spawn the entity
+        .add_systems(Startup, spawn_entity) // Add a startup system to spawn the entity
         // Add setup system.
         .add_systems(Startup, setup)
         // Add camera system.

@@ -12,6 +12,9 @@ bevy_ecs_tilemap = "0.14"
 rand = "0.8.5"
 bevy_rapier2d = "0.27.0"
 bevy_tweening = "0.11.0"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = "1.0"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
