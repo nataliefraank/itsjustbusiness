@@ -128,13 +128,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         map_height,
     });
 
-    // Spawn the janitor sprite
-    let janitor_texture: Handle<Image> = asset_server.load("janitor32x48.png");
-    let mut player_sprite_obj = SpriteBundle::default();
-    player_sprite_obj.texture = janitor_texture;
-    player_sprite_obj.transform = Transform::from_xyz(360.0, 410.0, 1.0);
+    // // Spawn the janitor sprite
+    // let janitor_texture: Handle<Image> = asset_server.load("janitor32x48.png");
+    // let mut player_sprite_obj = SpriteBundle::default();
+    // player_sprite_obj.texture = janitor_texture;
+    // player_sprite_obj.transform = Transform::from_xyz(360.0, 410.0, 1.0);
 
-    commands.spawn(player_sprite_obj);
+    // commands.spawn(player_sprite_obj);
 
     // commands.spawn(SpriteBundle {
     //     texture: janitor_texture,
