@@ -1,20 +1,11 @@
 use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
-use bevy_tweening::{EaseMethod, TransformPositionLens, Tween};
+use bevy_tweening::Tween;
 // use r#move::{derive_z_from_y_after_move, move_camera, move_player};
-use core::time;
 use std::time::Duration;
 
-use bevy::{
-    ecs::{query, world},
-    math::vec3,
-    prelude::*,
-    reflect::utility::GenericTypeCell,
-    render::{camera, render_resource::Texture},
-    transform::{self, commands},
-    utils::tracing::span::Id,
-};
+use bevy::math::vec3;
 use bevy_tweening::*;
 use lens::TransformPositionLens;
 
@@ -64,15 +55,15 @@ struct Player {
     speed: Speed,
 }
 
-#[derive(Component)]
-struct Position {
-    position: Vec<f32>,
-}
+// #[derive(Component)]
+// struct Position {
+//     position: Vec<f32>,
+// }
 
-#[derive(Component)]
-struct Speed {
-    speed: i32,
-}
+// #[derive(Component)]
+// struct Speed {
+//     speed: i32,
+// }
 
 // #[derive(Component)]
 struct MyCameraMarker;
@@ -221,7 +212,7 @@ struct PosVar {
 
 fn keyboard_input(
     keys: Res<ButtonInput<KeyCode>>,
-    query: Query<&Transform>,
+    // query: Query<&Transform>,
     mut local: ResMut<PosVar>,
     mut commands: Commands,
     time: Res<Time>,
@@ -332,6 +323,7 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
     .with_repeat_count(RepeatCount::Finite(2))
     .with_repeat_strategy(RepeatStrategy::MirroredRepeat);
 
+    let janitor_texture: Handle<Image> = asset_server.load("janitor-v1.png");
     let id = commands
         .spawn((
             SpriteBundle {
@@ -340,7 +332,11 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
                     custom_size: Some(Vec2::new(40., 40.)),
                     ..default()
                 },
-
+                texture: janitor_texture,
+                transform: Transform {
+                    translation: Vec3::new(360.0, 410.0, 1.0),
+                    ..Default::default()
+                },
                 ..default()
             },
             Animator::new(tween),
