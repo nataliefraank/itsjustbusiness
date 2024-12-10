@@ -129,7 +129,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 
     // Spawn the janitor sprite
-    let janitor_texture: Handle<Image> = asset_server.load("janitor-v1.png");
+    let janitor_texture: Handle<Image> = asset_server.load("janitor32x48.png");
     let mut player_sprite_obj = SpriteBundle::default();
     player_sprite_obj.texture = janitor_texture;
     player_sprite_obj.transform = Transform::from_xyz(360.0, 410.0, 1.0);
@@ -324,7 +324,7 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
     .with_repeat_count(RepeatCount::Finite(2))
     .with_repeat_strategy(RepeatStrategy::MirroredRepeat);
 
-    let janitor_texture: Handle<Image> = asset_server.load("janitor-v1.png");
+    let janitor_texture: Handle<Image> = asset_server.load("janitor32x48.png");
     let id = commands
         .spawn((
             SpriteBundle {
