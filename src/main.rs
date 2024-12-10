@@ -10,6 +10,7 @@ use bevy_tweening::*;
 use lens::TransformPositionLens;
 
 mod mainmenu;
+mod cursor;
 // mod test;
 // mod r#move;
 // mod move2;
@@ -55,15 +56,15 @@ struct Player {
     speed: Speed,
 }
 
-// #[derive(Component)]
-// struct Position {
-//     position: Vec<f32>,
-// }
+#[derive(Component)]
+struct Position {
+    position: Vec<f32>,
+}
 
-// #[derive(Component)]
-// struct Speed {
-//     speed: i32,
-// }
+#[derive(Component)]
+struct Speed {
+    speed: i32,
+}
 
 // #[derive(Component)]
 struct MyCameraMarker;
