@@ -55,15 +55,15 @@ struct Player {
     speed: Speed,
 }
 
-// #[derive(Component)]
-// struct Position {
-//     position: Vec<f32>,
-// }
+#[derive(Component)]
+struct Position {
+    position: Vec<f32>,
+}
 
-// #[derive(Component)]
-// struct Speed {
-//     speed: i32,
-// }
+#[derive(Component)]
+struct Speed {
+    speed: i32,
+}
 
 // #[derive(Component)]
 struct MyCameraMarker;
@@ -311,7 +311,7 @@ fn keyboard_input(
 }
 
 fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    //commands.spawn(Camera2dBundle::default());
     let tween = Tween::new(
         EaseFunction::QuadraticInOut,
         Duration::from_secs(1),
