@@ -1,6 +1,7 @@
 use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
+use bevy_tweening::{EaseMethod, TransformPositionLens, Tween};
 // use r#move::{derive_z_from_y_after_move, move_camera, move_player};
 use core::time;
 use std::time::Duration;
@@ -18,6 +19,7 @@ use bevy_tweening::*;
 use lens::TransformPositionLens;
 
 mod mainmenu;
+// mod test;
 // mod r#move;
 // mod move2;
 // mod playermovement;
@@ -81,10 +83,9 @@ fn main() {
         // Add Bevy default plugins.
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .init_state::<GameState>()
-        .add_plugins(TweeningPlugin)
         .init_state::<GameState>()
-        // Add MenuPlugin
-        // Add TileMap plugin.
+        // .add_plugins(bevy_tweening::TweeningPlugin)
+        // Add MenuPlugin and TileMap plugin.
         .add_plugins((TilemapPlugin, MenuPlugin))
         .insert_resource(MapInfo {
             map_width: 30.0,
@@ -209,30 +210,6 @@ fn scale_tilemap_to_screen(
         window_width, window_height, map_info.map_width, map_info.map_height, scale
     );
 }
-
-// fn spriteMove(commands: Commands, sprite: SpriteBundle) {
-//     // Create a single animation (tween) to move an entity.
-//     let tween = Tween::new(
-//         // Use a quadratic easing on both endpoints.
-//         EaseFunction::QuadraticInOut,
-//         // Animation time.
-//         Duration::from_secs(1),
-//         // The lens gives access to the Transform component of the Entity,
-//         // for the Animator to animate it. It also contains the start and
-//         // end values respectively associated with the progress ratios 0. and 1.
-//         TransformPositionLens {
-//             start: Vec3::ZERO,
-//             end: Vec3::new(1., 2., -4.),
-//         },
-//     );
-
-//     commands.spawn((
-//         // Spawn an entity to animate the position of.
-//         TransformBundle::default(),
-//         // Add an Animator component to control and execute the animation.
-//         Animator::new(tween),
-//     ));
-// }
 
 #[derive(Resource)]
 struct PosVar {

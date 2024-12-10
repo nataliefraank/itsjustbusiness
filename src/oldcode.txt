@@ -228,3 +228,28 @@ HELPER
 
 // // Spawn the map with default options
 // // commands.spawn(TiledMapHandle(map_handle));
+
+
+// fn spriteMove(commands: Commands, sprite: SpriteBundle) {
+//     // Create a single animation (tween) to move an entity.
+//     let tween = Tween::new(
+//         // Use a quadratic easing on both endpoints.
+//         EaseFunction::QuadraticInOut,
+//         // Animation time.
+//         Duration::from_secs(1),
+//         // The lens gives access to the Transform component of the Entity,
+//         // for the Animator to animate it. It also contains the start and
+//         // end values respectively associated with the progress ratios 0. and 1.
+//         TransformPositionLens {
+//             start: Vec3::ZERO,
+//             end: Vec3::new(1., 2., -4.),
+//         },
+//     );
+
+//     commands.spawn((
+//         // Spawn an entity to animate the position of.
+//         TransformBundle::default(),
+//         // Add an Animator component to control and execute the animation.
+//         Animator::new(tween),
+//     ));
+// }
