@@ -9,8 +9,8 @@ use bevy::math::vec3;
 use bevy_tweening::*;
 use lens::TransformPositionLens;
 
-mod mainmenu;
 mod cursor;
+mod mainmenu;
 // mod test;
 // mod r#move;
 // mod move2;
@@ -225,7 +225,7 @@ fn keyboard_input(
     }
     if !(local.in_anim) {
         if keys.pressed(KeyCode::ArrowRight) {
-            let upd_pos = local.pos_vec + vec3(40., 0., 0.);
+            let upd_pos = local.pos_vec + vec3(36., 0., 0.);
             let tween = Tween::new(
                 // Use a quadratic easing on both endpoints.
                 EaseFunction::QuadraticInOut,
@@ -250,7 +250,7 @@ fn keyboard_input(
             local.timer.reset();
             local.in_anim = true
         } else if keys.pressed(KeyCode::ArrowLeft) {
-            let upd_pos = local.pos_vec + vec3(-40., 0., 0.);
+            let upd_pos = local.pos_vec + vec3(-36., 0., 0.);
             let tween = Tween::new(
                 EaseFunction::QuadraticInOut,
                 Duration::from_millis(250),
@@ -269,7 +269,7 @@ fn keyboard_input(
             local.timer.reset();
             local.in_anim = true
         } else if keys.pressed(KeyCode::ArrowDown) {
-            let upd_pos = local.pos_vec + vec3(0., -40., 0.);
+            let upd_pos = local.pos_vec + vec3(0., -36., 0.);
             let tween = Tween::new(
                 EaseFunction::QuadraticInOut,
                 Duration::from_millis(250),
@@ -288,7 +288,7 @@ fn keyboard_input(
             local.timer.reset();
             local.in_anim = true
         } else if keys.pressed(KeyCode::ArrowUp) {
-            let upd_pos = local.pos_vec + vec3(0., 40., 0.);
+            let upd_pos = local.pos_vec + vec3(0., 36., 0.);
             let tween = Tween::new(
                 EaseFunction::QuadraticInOut,
                 Duration::from_millis(250),
@@ -330,7 +330,7 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
             SpriteBundle {
                 sprite: Sprite {
                     color: bevy::color::Color::WHITE,
-                    custom_size: Some(Vec2::new(40., 40.)),
+                    custom_size: Some(Vec2::new(21., 32.)),
                     ..default()
                 },
                 texture: janitor_texture,
@@ -351,8 +351,7 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-
-fn spawn_task(mut commands: Commands, asset_server: Res<AssetServer>){
+fn spawn_task(mut commands: Commands, asset_server: Res<AssetServer>) {
     let planttexture: Handle<Image> = asset_server.load("plant_asset1.png");
     let mut plant_object = SpriteBundle::default();
 
@@ -360,5 +359,4 @@ fn spawn_task(mut commands: Commands, asset_server: Res<AssetServer>){
 
     plant_object.transform = Transform::from_xyz(100.0, 410.0, 1.0);
     commands.spawn(plant_object);
-    
 }
