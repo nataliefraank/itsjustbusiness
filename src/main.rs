@@ -317,8 +317,8 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
         EaseFunction::QuadraticInOut,
         Duration::from_secs(1),
         TransformPositionLens {
-            start: Vec3::ZERO,
-            end: Vec3::new(0., 200., 0.),
+            start: Vec3::new(360.0, 410.0, 1.0),
+            end: Vec3::new(360.0, 410.0, 1.0),
         },
     )
     .with_repeat_count(RepeatCount::Finite(2))
@@ -345,7 +345,7 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
         .id();
     commands.insert_resource(PosVar {
         in_anim: false,
-        pos_vec: Vec3::ZERO,
+        pos_vec: Vec3::new(360., 410., 1.),
         id: id,
         timer: Timer::from_seconds(0.25, TimerMode::Once),
     });
