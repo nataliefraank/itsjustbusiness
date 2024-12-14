@@ -18,6 +18,9 @@ mod mainmenu;
 use crate::mainmenu::MenuPlugin;
 // Resource to store the map's size and tile size.
 
+
+use bevy_spritesheet_animation::prelude::*;
+
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 enum GameState {
     #[default]
@@ -79,6 +82,7 @@ fn main() {
         .add_plugins(bevy_tweening::TweeningPlugin)
         // Add MenuPlugin and TileMap plugin.
         .add_plugins((TilemapPlugin, MenuPlugin))
+        .add_plugins(SpritesheetAnimationPlugin)
         .insert_resource(MapInfo {
             map_width: 30.0,
             map_height: 20.0,
@@ -217,101 +221,126 @@ fn keyboard_input(
     mut local: ResMut<PosVar>,
     mut commands: Commands,
     time: Res<Time>,
+    library: Res<SpritesheetLibrary>,
+    mut characters: Query<(
+        Entity,
+        &mut Transform,
+        &mut Sprite,
+        &mut SpritesheetAnimation,
+    )>,
 ) {
-    local.timer.tick(time.delta());
-    if local.timer.just_finished() {
-        local.in_anim = false;
-        print!("reset")
-    }
-    if !(local.in_anim) {
-        if keys.pressed(KeyCode::ArrowRight) {
-            let upd_pos = local.pos_vec + vec3(36., 0., 0.);
-            let tween = Tween::new(
-                // Use a quadratic easing on both endpoints.
-                EaseFunction::QuadraticInOut,
-                // Animation time (one way only; for ping-pong it takes 2 seconds
-                // to come back to start).
-                Duration::from_millis(250),
-                // The lens gives the Animator access to the Transform component,
-                // to animate it. It also contains the start and end values associated
-                // with the animation ratios 0. and 1.
-                TransformPositionLens {
-                    start: local.pos_vec,
-                    end: upd_pos,
-                },
-            );
-            println!("moving");
+    const CHARACTER_SPEED: f32 = 150.0;
+    for (entity, mut transform, mut sprite, mut animation) in &mut characters {
+        local.timer.tick(time.delta());
+        if local.timer.just_finished() {
+            local.in_anim = false;
+            print!("reset")
+        }
+        if !(local.in_anim) {
+            if keys.pressed(KeyCode::ArrowRight) {
+                if let Some(id) = library.animation_with_name("rightwalk") {
+                    animation.animation_id = id;
+                }
+                //transform.translation -= Vec3::X * time.delta_seconds() * CHARACTER_SPEED;
+                sprite.flip_x = false;
+                let upd_pos = local.pos_vec + vec3(36., 0., 0.);
+                let tween = Tween::new(
+                    // Use a quadratic easing on both endpoints.
+                    EaseFunction::QuadraticInOut,
+                    // Animation time (one way only; for ping-pong it takes 2 seconds
+                    // to come back to start).
+                    Duration::from_millis(250),
+                    // The lens gives the Animator access to the Transform component,
+                    // to animate it. It also contains the start and end values associated
+                    // with the animation ratios 0. and 1.
+                    TransformPositionLens {
+                        start: local.pos_vec,
+                        end: upd_pos,
+                    },
+                );
+                println!("moving");
 
-            commands
-                .entity(local.id)
-                .remove::<Animator<Transform>>()
-                .insert(Animator::new(tween));
-            local.pos_vec = upd_pos;
-            local.timer.reset();
-            local.in_anim = true
-        } else if keys.pressed(KeyCode::ArrowLeft) {
-            let upd_pos = local.pos_vec + vec3(-36., 0., 0.);
-            let tween = Tween::new(
-                EaseFunction::QuadraticInOut,
-                Duration::from_millis(250),
-                TransformPositionLens {
-                    start: local.pos_vec,
-                    end: upd_pos,
-                },
-            );
-            println!("moving");
+                commands
+                    .entity(local.id)
+                    .remove::<Animator<Transform>>()
+                    .insert(Animator::new(tween));
+                local.pos_vec = upd_pos;
+                local.timer.reset();
+                local.in_anim = true
+            } else if keys.pressed(KeyCode::ArrowLeft) {
+                if let Some(id) = library.animation_with_name("leftwalk") {
+                    animation.animation_id = id;
+                }
+                //transform.translation -= Vec3::X * time.delta_seconds() * CHARACTER_SPEED;
+                sprite.flip_x = true;
+                let upd_pos = local.pos_vec + vec3(-36., 0., 0.);
+                let tween = Tween::new(
+                    EaseFunction::QuadraticInOut,
+                    Duration::from_millis(250),
+                    TransformPositionLens {
+                        start: local.pos_vec,
+                        end: upd_pos,
+                    },
+                );
+                println!("moving");
 
-            commands
-                .entity(local.id)
-                .remove::<Animator<Transform>>()
-                .insert(Animator::new(tween));
-            local.pos_vec = upd_pos;
-            local.timer.reset();
-            local.in_anim = true
-        } else if keys.pressed(KeyCode::ArrowDown) {
-            let upd_pos = local.pos_vec + vec3(0., -36., 0.);
-            let tween = Tween::new(
-                EaseFunction::QuadraticInOut,
-                Duration::from_millis(250),
-                TransformPositionLens {
-                    start: local.pos_vec,
-                    end: upd_pos,
-                },
-            );
-            println!("moving");
+                commands
+                    .entity(local.id)
+                    .remove::<Animator<Transform>>()
+                    .insert(Animator::new(tween));
+                local.pos_vec = upd_pos;
+                local.timer.reset();
+                local.in_anim = true
+            } else if keys.pressed(KeyCode::ArrowDown) {
+                let upd_pos = local.pos_vec + vec3(0., -36., 0.);
+                let tween = Tween::new(
+                    EaseFunction::QuadraticInOut,
+                    Duration::from_millis(250),
+                    TransformPositionLens {
+                        start: local.pos_vec,
+                        end: upd_pos,
+                    },
+                );
+                println!("moving");
 
-            commands
-                .entity(local.id)
-                .remove::<Animator<Transform>>()
-                .insert(Animator::new(tween));
-            local.pos_vec = upd_pos;
-            local.timer.reset();
-            local.in_anim = true
-        } else if keys.pressed(KeyCode::ArrowUp) {
-            let upd_pos = local.pos_vec + vec3(0., 36., 0.);
-            let tween = Tween::new(
-                EaseFunction::QuadraticInOut,
-                Duration::from_millis(250),
-                TransformPositionLens {
-                    start: local.pos_vec,
-                    end: upd_pos,
-                },
-            );
+                commands
+                    .entity(local.id)
+                    .remove::<Animator<Transform>>()
+                    .insert(Animator::new(tween));
+                local.pos_vec = upd_pos;
+                local.timer.reset();
+                local.in_anim = true
+            } else if keys.pressed(KeyCode::ArrowUp) {
+                let upd_pos = local.pos_vec + vec3(0., 36., 0.);
+                let tween = Tween::new(
+                    EaseFunction::QuadraticInOut,
+                    Duration::from_millis(250),
+                    TransformPositionLens {
+                        start: local.pos_vec,
+                        end: upd_pos,
+                    },
+                );
 
-            println!("moving");
+                println!("moving");
 
-            commands
-                .entity(local.id)
-                .remove::<Animator<Transform>>()
-                .insert(Animator::new(tween));
-            local.pos_vec = upd_pos;
-            local.timer.reset();
-            local.in_anim = true
+                commands
+                    .entity(local.id)
+                    .remove::<Animator<Transform>>()
+                    .insert(Animator::new(tween));
+                local.pos_vec = upd_pos;
+                local.timer.reset();
+                local.in_anim = true
+            }
         }
     }
 }
 
-fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_entity(
+    mut commands: Commands,
+     asset_server: Res<AssetServer>,
+     mut library: ResMut<SpritesheetLibrary>,
+     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    ) {
     //commands.spawn(Camera2dBundle::default());
     let tween = Tween::new(
         EaseFunction::QuadraticInOut,
@@ -324,9 +353,61 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
     .with_repeat_count(RepeatCount::Finite(2))
     .with_repeat_strategy(RepeatStrategy::MirroredRepeat);
 
-    let janitor_texture: Handle<Image> = asset_server.load("janitor32x48.png");
+    let janitor_texture: Handle<Image> = asset_server.load("janitor_spritesheet.png");
+
+    let layout = atlas_layouts.add(TextureAtlasLayout::from_grid(
+        UVec2::new(32, 48),
+        3,
+        4,
+        None,
+        None,
+    ));
+
+    let leftwalk_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).horizontal_strip(1, 3, 3));
+    });
+
+    let leftwalk_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(leftwalk_clip_id.into())
+            .set_repeat(AnimationRepeat::Loop);
+    });
+
+    library.name_animation(leftwalk_anim_id, "leftwalk").unwrap();
+
+
+
+    let rightwalk_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).horizontal_strip(3, 2, 3));
+    });
+
+    let rightwalk_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(leftwalk_clip_id.into())
+            .set_repeat(AnimationRepeat::Loop);
+    });
+
+    library.name_animation(rightwalk_anim_id, "rightwalk").unwrap();
+
+    
     let id = commands
         .spawn((
+            // SpriteBundle {
+            //     sprite: Sprite {
+            //         color: bevy::color::Color::WHITE,
+            //         custom_size: Some(Vec2::new(21., 32.)),
+            //         ..default()
+            //     },
+            //     texture: janitor_texture,
+            //     transform: Transform {
+            //         translation: Vec3::new(360.0, 410.0, 1.0),
+            //         ..Default::default()
+            //     },
+            //     ..default()
+            // },
+            // Animator::new(tween),
+
+
             SpriteBundle {
                 sprite: Sprite {
                     color: bevy::color::Color::WHITE,
@@ -340,7 +421,13 @@ fn spawn_entity(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 ..default()
             },
+            TextureAtlas {
+                layout,
+                ..default()
+            },
+            SpritesheetAnimation::from_id(rightwalk_anim_id),
             Animator::new(tween),
+
         ))
         .id();
     commands.insert_resource(PosVar {
