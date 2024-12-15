@@ -6,13 +6,50 @@ use bevy_tweening::Tween;
 // use r#move::{derive_z_from_y_after_move, move_camera, move_player};
 use std::time::Duration;
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+enum Collision {
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+
 fn check_for_collisions(
     mut commands: Commands,
     mut sprite: SpriteBundle,
     mut tasks: Vec<SpriteBundle>,
-    player_query: Query<(Entity, &Transform), With<Task>,
-    collider_query: Query<&Transform, With<SpriteBundle>,
-    mut collision_events: EventWriter<CollisionEvent>,
+    mut player_query: Query<(Entity, &Transform), With<Task>,
+    mut collider_query: Query<&Transform, With<SpriteBundle>
+    
 ) {
-    let (sprite.transform) = tas_query.into_inner();
+    let (sprite.transform) = player_query.into_inner();
+
+    for (collider_entity, collider_transform, maybe_brick) in &collider_query {
+        let collision = player_collision_collision(
+            sprite.transform
+            ),
+        );
+    }
+
+    fn player_collision(player: Transform,) -> Option<Collision> {
+        if !player.intersects(&bounding_box) {
+            return None;
+        }
+    
+        let closest = bounding_box.closest_point(player.center());
+        let offset = ball.center() - closest;
+        let side = if offset.x.abs() > offset.y.abs() {
+            if offset.x < 0. {
+                Collision::Left
+            } else {
+                Collision::Right
+            }
+        } else if offset.y > 0. {
+            Collision::Top
+        } else {
+            Collision::Bottom
+        };
+    
+        Some(side)
+    }
 }
