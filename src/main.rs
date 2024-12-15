@@ -75,38 +75,27 @@ struct MyCameraMarker;
 fn main() {
     // Create a new application.
     App::default()
-        // Add Bevy default plugins.
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
-        .init_state::<GameState>()
-        .init_state::<GameState>()
-        .add_plugins(bevy_tweening::TweeningPlugin)
-        // Add MenuPlugin and TileMap plugin.
-        .add_plugins((TilemapPlugin, MenuPlugin))
-        .add_plugins(SpritesheetAnimationPlugin)
-        .insert_resource(MapInfo {
-            map_width: 30.0,
-            map_height: 20.0,
-        })
-        .add_systems(Startup, spawn_entity) // Add a startup system to spawn the entity
-        // Add setup system.
-        .add_systems(Startup, setup)
-        // Add camera system.
-        .add_systems(Startup, spawn_camera)
-        .add_systems(Startup, scale_tilemap_to_screen)
-        .add_systems(Update, keyboard_input)
-        // Add bevy_ecs_tilemap plugin
-        .add_plugins(TiledMapPlugin::default())
-        // .add_systems(Update, spriteMove)
-        // .add_systems(
-        //     Update,
-        //     (
-        //         // move_player,
-        //         // move_camera,
-        //         // derive_z_from_y_after_move,
-        //         // collision_events,
-        //     ),
-        // )
-        .run();
+    .add_plugins((
+        DefaultPlugins.set(ImagePlugin::default_nearest()),
+        bevy_tweening::TweeningPlugin,
+        TilemapPlugin,
+        MenuPlugin,
+        SpritesheetAnimationPlugin,
+        TiledMapPlugin::default(),
+    ))
+    .init_state::<GameState>()
+    .insert_resource(MapInfo {
+        map_width: 30.0,
+        map_height: 20.0,
+    })
+    .add_systems(Startup, (
+        spawn_entity,
+        setup,
+        spawn_camera,
+        scale_tilemap_to_screen
+    ))    .add_systems(Update, keyboard_input)
+    .run();
+    
 }
 
 // Loads tilemap and janitor sprite.
@@ -131,35 +120,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         map_width,
         map_height,
     });
-
-    // // Spawn the janitor sprite
-    // let janitor_texture: Handle<Image> = asset_server.load("janitor32x48.png");
-    // let mut player_sprite_obj = SpriteBundle::default();
-    // player_sprite_obj.texture = janitor_texture;
-    // player_sprite_obj.transform = Transform::from_xyz(360.0, 410.0, 1.0);
-
-    // commands.spawn(player_sprite_obj);
-
-    // commands.spawn(SpriteBundle {
-    //     texture: janitor_texture,
-    //     transform: Transform {
-    //         translation: Vec3::new(360.0, 410.0, 1.0), // Adjust based on your layout
-    //         ..Default::default()
-    //     },
-    //     ..Default::default()
-    // });
-
-    // commands.spawn((
-    //     Player {
-    //         position: Point { x: 0.0, y: 0.0 },
-    //         sprite: Rect {},
-    //         speed: 3,
-    //     },
-    //     Transform::default(),
-    //     GlobalTransform::default(),
-    //     Visibility::default(),
-    //     InheritedVisibility::default(),
-    // ));
 
     info!("Setup complete. Map size: {}x{}", map_width, map_height);
 }
@@ -213,11 +173,11 @@ struct PosVar {
     id: Entity,
     timer: Timer,
     in_anim: bool,
+    last_direction: Option<Vec3>,
+    
 }
-
 fn keyboard_input(
     keys: Res<ButtonInput<KeyCode>>,
-    // query: Query<&Transform>,
     mut local: ResMut<PosVar>,
     mut commands: Commands,
     time: Res<Time>,
@@ -229,111 +189,87 @@ fn keyboard_input(
         &mut SpritesheetAnimation,
     )>,
 ) {
-    const CHARACTER_SPEED: f32 = 150.0;
     for (entity, mut transform, mut sprite, mut animation) in &mut characters {
         local.timer.tick(time.delta());
         if local.timer.just_finished() {
             local.in_anim = false;
-            print!("reset")
         }
-        if !(local.in_anim) {
+
+        if !local.in_anim {
+            let mut new_animation_id = None;
+            let mut direction = None;
+            let mut target_position = local.pos_vec;
+
             if keys.pressed(KeyCode::ArrowRight) {
-                if let Some(id) = library.animation_with_name("rightwalk") {
-                    animation.animation_id = id;
-                }
-                //transform.translation -= Vec3::X * time.delta_seconds() * CHARACTER_SPEED;
-                sprite.flip_x = false;
-                let upd_pos = local.pos_vec + vec3(36., 0., 0.);
-                let tween = Tween::new(
-                    // Use a quadratic easing on both endpoints.
-                    EaseFunction::QuadraticInOut,
-                    // Animation time (one way only; for ping-pong it takes 2 seconds
-                    // to come back to start).
-                    Duration::from_millis(250),
-                    // The lens gives the Animator access to the Transform component,
-                    // to animate it. It also contains the start and end values associated
-                    // with the animation ratios 0. and 1.
-                    TransformPositionLens {
-                        start: local.pos_vec,
-                        end: upd_pos,
-                    },
-                );
-                println!("moving");
+                new_animation_id = library.animation_with_name("rightwalk");
+                direction = Some(vec3(27., 0., 0.));
+                local.last_direction = Some(direction.unwrap());
 
-                commands
-                    .entity(local.id)
-                    .remove::<Animator<Transform>>()
-                    .insert(Animator::new(tween));
-                local.pos_vec = upd_pos;
-                local.timer.reset();
-                local.in_anim = true
             } else if keys.pressed(KeyCode::ArrowLeft) {
-                if let Some(id) = library.animation_with_name("leftwalk") {
-                    animation.animation_id = id;
-                }
-                //transform.translation -= Vec3::X * time.delta_seconds() * CHARACTER_SPEED;
-                sprite.flip_x = true;
-                let upd_pos = local.pos_vec + vec3(-36., 0., 0.);
-                let tween = Tween::new(
-                    EaseFunction::QuadraticInOut,
-                    Duration::from_millis(250),
-                    TransformPositionLens {
-                        start: local.pos_vec,
-                        end: upd_pos,
-                    },
-                );
-                println!("moving");
+                new_animation_id = library.animation_with_name("leftwalk");
+                direction = Some(vec3(-27., 0., 0.));
+                local.last_direction = Some(direction.unwrap());
 
-                commands
-                    .entity(local.id)
-                    .remove::<Animator<Transform>>()
-                    .insert(Animator::new(tween));
-                local.pos_vec = upd_pos;
-                local.timer.reset();
-                local.in_anim = true
             } else if keys.pressed(KeyCode::ArrowDown) {
-                let upd_pos = local.pos_vec + vec3(0., -36., 0.);
-                let tween = Tween::new(
-                    EaseFunction::QuadraticInOut,
-                    Duration::from_millis(250),
-                    TransformPositionLens {
-                        start: local.pos_vec,
-                        end: upd_pos,
-                    },
-                );
-                println!("moving");
+                new_animation_id = library.animation_with_name("frontwalk");
+                direction = Some(vec3(0., -27., 0.));
+                local.last_direction = Some(direction.unwrap());
 
-                commands
-                    .entity(local.id)
-                    .remove::<Animator<Transform>>()
-                    .insert(Animator::new(tween));
-                local.pos_vec = upd_pos;
-                local.timer.reset();
-                local.in_anim = true
             } else if keys.pressed(KeyCode::ArrowUp) {
-                let upd_pos = local.pos_vec + vec3(0., 36., 0.);
-                let tween = Tween::new(
-                    EaseFunction::QuadraticInOut,
-                    Duration::from_millis(250),
-                    TransformPositionLens {
-                        start: local.pos_vec,
-                        end: upd_pos,
-                    },
-                );
+                new_animation_id = library.animation_with_name("upwardwalk");
+                direction = Some(vec3(0., 27., 0.));
+                local.last_direction = Some(direction.unwrap());
 
-                println!("moving");
+            }
+            if !keys.pressed(KeyCode::ArrowRight)
+                && !keys.pressed(KeyCode::ArrowLeft)
+                && !keys.pressed(KeyCode::ArrowDown)
+                && !keys.pressed(KeyCode::ArrowUp)
+            {
+                new_animation_id = Some(match local.last_direction {
+                    Some(dir) if dir == vec3(27., 0., 0.) => library.animation_with_name("rightidle").unwrap(),
+                    Some(dir) if dir == vec3(-27., 0., 0.) => library.animation_with_name("leftidle").unwrap(),
+                    Some(dir) if dir == vec3(0., -27., 0.) => library.animation_with_name("frontidle").unwrap(),
+                    Some(dir) if dir == vec3(0., 27., 0.) => library.animation_with_name("upwardidle").unwrap(),
+                    _ => library.animation_with_name("frontidle").unwrap(),
+                });
+            }
+            
+            
 
-                commands
-                    .entity(local.id)
-                    .remove::<Animator<Transform>>()
-                    .insert(Animator::new(tween));
-                local.pos_vec = upd_pos;
-                local.timer.reset();
-                local.in_anim = true
+            if let Some(animation_id) = new_animation_id {
+                if animation.animation_id != animation_id {
+                    animation.animation_id = animation_id;
+                    animation.reset();
+                }
+
+                if let Some(dir) = direction {
+                    target_position = local.pos_vec + dir;
+
+                    let tween = Tween::new(
+                        EaseFunction::QuadraticInOut,
+                        Duration::from_millis(250),
+                        TransformPositionLens {
+                            start: local.pos_vec,
+                            end: target_position,
+                        },
+                    );
+
+                    commands
+                        .entity(local.id)
+                        .remove::<Animator<Transform>>()
+                        .insert(Animator::new(tween));
+
+                    local.pos_vec = target_position;
+                    local.timer.reset();
+                    local.in_anim = true;
+                }
             }
         }
     }
 }
+
+
 
 fn spawn_entity(
     mut commands: Commands,
@@ -341,7 +277,6 @@ fn spawn_entity(
      mut library: ResMut<SpritesheetLibrary>,
      mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     ) {
-    //commands.spawn(Camera2dBundle::default());
     let tween = Tween::new(
         EaseFunction::QuadraticInOut,
         Duration::from_secs(1),
@@ -363,51 +298,103 @@ fn spawn_entity(
         None,
     ));
 
-    let leftwalk_clip_id = library.new_clip(|clip| {
-        clip.push_frame_indices(Spritesheet::new(3, 4).horizontal_strip(1, 3, 3));
-    });
+    //Left idle
+    let leftidle_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(2, 0..=0));
 
+    });
+    let leftidle_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(leftidle_clip_id.into());
+            });
+    library.name_animation(leftidle_anim_id, "leftidle").unwrap();
+   
+    //Right idle
+    let rightidle_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(3, 0..=0));
+
+    });
+    let rightidle_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(rightidle_clip_id.into());
+            });
+    library.name_animation(rightidle_anim_id, "rightidle").unwrap();         
+    //Front idle
+    let frontidle_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(0, 0..=0));
+
+    });
+    let frontidle_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(frontidle_clip_id.into());
+            });
+    library.name_animation(frontidle_anim_id, "frontidle").unwrap();
+
+    //Upward idle
+    let upwardidle_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(1, 0..=0));
+
+    });
+    let upwardidle_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(upwardidle_clip_id.into());
+            });
+    library.name_animation(upwardidle_anim_id, "upwardidle").unwrap();      
+
+    //Left walking direction
+    let leftwalk_clip_id = library.new_clip(|clip| {
+        //clip.push_frame_indices(Spritesheet::new(3, 4).horizontal_strip(1, 3, 3));
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(2, 1..=2));
+
+    });
     let leftwalk_anim_id = library.new_animation(|animation| {
         animation
             .add_stage(leftwalk_clip_id.into())
             .set_repeat(AnimationRepeat::Loop);
-    });
-
+            });
     library.name_animation(leftwalk_anim_id, "leftwalk").unwrap();
 
 
-
+    //Right walking direction
     let rightwalk_clip_id = library.new_clip(|clip| {
-        clip.push_frame_indices(Spritesheet::new(3, 4).horizontal_strip(3, 2, 3));
-    });
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(3, 1..=2));
 
+    });
     let rightwalk_anim_id = library.new_animation(|animation| {
         animation
-            .add_stage(leftwalk_clip_id.into())
-            .set_repeat(AnimationRepeat::Loop);
-    });
-
+            .add_stage(rightwalk_clip_id.into())
+            .set_repeat(AnimationRepeat::Loop);  
+        });
     library.name_animation(rightwalk_anim_id, "rightwalk").unwrap();
 
+    //Front walking direction
+    let frontwalk_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(0, 1..=2));
+    });
+    let frontwalk_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(frontwalk_clip_id.into())
+            .set_repeat(AnimationRepeat::Loop);  
     
+    });
+    library.name_animation(frontwalk_anim_id, "frontwalk").unwrap();
+
+    //Upward walking direction
+    let upwardwalk_clip_id = library.new_clip(|clip| {
+        clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(1, 1..=2));
+
+    });
+    let upwardwalk_anim_id = library.new_animation(|animation| {
+        animation
+            .add_stage(upwardwalk_clip_id.into())
+            .set_repeat(AnimationRepeat::Loop);   
+          
+        });
+    library.name_animation(upwardwalk_anim_id, "upwardwalk").unwrap();
+
+ 
     let id = commands
         .spawn((
-            // SpriteBundle {
-            //     sprite: Sprite {
-            //         color: bevy::color::Color::WHITE,
-            //         custom_size: Some(Vec2::new(21., 32.)),
-            //         ..default()
-            //     },
-            //     texture: janitor_texture,
-            //     transform: Transform {
-            //         translation: Vec3::new(360.0, 410.0, 1.0),
-            //         ..Default::default()
-            //     },
-            //     ..default()
-            // },
-            // Animator::new(tween),
-
-
             SpriteBundle {
                 sprite: Sprite {
                     color: bevy::color::Color::WHITE,
@@ -425,7 +412,7 @@ fn spawn_entity(
                 layout,
                 ..default()
             },
-            SpritesheetAnimation::from_id(rightwalk_anim_id),
+            SpritesheetAnimation::from_id(frontidle_anim_id),
             Animator::new(tween),
 
         ))
@@ -435,6 +422,7 @@ fn spawn_entity(
         pos_vec: Vec3::new(360., 410., 1.),
         id: id,
         timer: Timer::from_seconds(0.25, TimerMode::Once),
+        last_direction: None,
     });
 }
 
