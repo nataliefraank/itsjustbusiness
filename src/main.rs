@@ -11,6 +11,7 @@ use lens::TransformPositionLens;
 
 mod cursor;
 mod mainmenu;
+mod collision;
 // mod test;
 // mod r#move;
 // mod move2;
