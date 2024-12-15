@@ -22,34 +22,37 @@ fn check_for_collisions(
     mut collider_query: Query<&Transform, With<SpriteBundle>
     
 ) {
-    let (sprite.transform) = player_query.into_inner();
+    let (sprite) = player_query.into_inner();
 
-    for (collider_entity, collider_transform, maybe_brick) in &collider_query {
-        let collision = player_collision_collision(
-            sprite.transform
-            ),
-        );
-    }
-
-    fn player_collision(player: Transform,) -> Option<Collision> {
-        if !player.intersects(&bounding_box) {
-            return None;
-        }
-    
-        let closest = bounding_box.closest_point(player.center());
-        let offset = ball.center() - closest;
-        let side = if offset.x.abs() > offset.y.abs() {
-            if offset.x < 0. {
-                Collision::Left
-            } else {
-                Collision::Right
-            }
-        } else if offset.y > 0. {
-            Collision::Top
-        } else {
-            Collision::Bottom
-        };
-    
-        Some(side)
-    }
+    for (collider_entity, collider_transform, in &collider_query) 
+    {
+        let collision = player_collision(sprite.transform);
+        if let Some(collision) = collision {
+            collision_events.send_default();
+        
+    };
 }
+
+fn player_collision(player: Transform,) -> Option<Collision> {
+    if !player.intersects(&bounding_box) {
+        return None;
+    }
+
+    let closest = bounding_box.closest_point(player.center());
+    let offset = player.center() - closest;
+    let side = if offset.x.abs() > offset.y.abs() {
+        if offset.x < 0. {
+            Collision::Left
+        } else {
+            Collision::Right
+        }
+    } else if offset.y > 0. {
+        Collision::Top
+    } else {
+        Collision::Bottom
+    };
+
+    Some(side)
+}
+
+
