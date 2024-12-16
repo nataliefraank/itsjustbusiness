@@ -11,19 +11,26 @@ use lens::TransformPositionLens;
 
 mod cursor;
 mod mainmenu;
-mod collision;
+mod text;
+//mod collision;
 // mod test;
 // mod r#move;
 // mod move2;
 // mod playermovement;
 use crate::mainmenu::MenuPlugin;
-// Resource to store the map's size and tile size.
 
 
 use bevy_spritesheet_animation::prelude::*;
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy::prelude::Window;
+use bevy_text_popup::TextPopupPlugin;
+use text::handle_next_popup;
+use text::welcome_setup;
+
+
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
-enum GameState {
+pub enum GameState {
     #[default]
     Menu,
     Settings,
@@ -79,14 +86,25 @@ struct MyCameraMarker;
 fn main() {
     // Create a new application.
     App::default()
+    .add_plugins(DefaultPlugins
+        .set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "It's Just Business".into(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        })
+        .set(ImagePlugin::default_nearest())
+    )
     .add_plugins((
-        DefaultPlugins.set(ImagePlugin::default_nearest()),
         bevy_tweening::TweeningPlugin,
         TilemapPlugin,
         MenuPlugin,
         SpritesheetAnimationPlugin,
         TiledMapPlugin::default(),
+        TextPopupPlugin,
     ))
+    //.add_plugins(EguiPlugin)
     .init_state::<GameState>()
     .insert_resource(MapInfo {
         map_width: 30.0,
@@ -96,11 +114,27 @@ fn main() {
         spawn_entity,
         setup,
         spawn_camera,
-        scale_tilemap_to_screen
-    ))    .add_systems(Update, keyboard_input)
+        scale_tilemap_to_screen,
+        welcome_setup
+    ))    
+    //.add_systems(Update, ui_example_system)
+    .add_systems(
+        Update,
+        (
+            keyboard_input,
+            handle_next_popup.run_if(in_state(GameState::Playing)),
+        )
+    )
     .run();
     
 }
+
+fn ui_example_system(mut contexts: EguiContexts) {
+    egui::Window::new("Hello").show(contexts.ctx_mut(), |ui| {
+        ui.label("world");
+    });
+}
+
 
 // Loads tilemap and janitor sprite.
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -124,6 +158,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         map_width,
         map_height,
     });
+    
 
     info!("Setup complete. Map size: {}x{}", map_width, map_height);
 }
@@ -191,6 +226,7 @@ fn keyboard_input(
         &mut Transform,
         &mut Sprite,
         &mut SpritesheetAnimation,
+        
     )>,
 ) {
     for (entity, mut transform, mut sprite, mut animation) in &mut characters {
