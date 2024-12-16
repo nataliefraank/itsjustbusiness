@@ -32,6 +32,9 @@ enum GameState {
     Exit,
 }
 
+#[derive(Component)]
+struct Collider;
+
 #[derive(Resource)]
 struct RootEntity(Entity);
 
