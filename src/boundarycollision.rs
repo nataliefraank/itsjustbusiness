@@ -10,6 +10,13 @@ struct WallBundle {
     collider: Collider,
 }
 
+//Would go in main i think
+    // commands.spawn(WallBundle::new(WallLocation::Left));
+    // commands.spawn(WallBundle::new(WallLocation::Right));
+    // commands.spawn(WallBundle::new(WallLocation::Bottom));
+    // commands.spawn(WallBundle::new(WallLocation::Top));
+
+
 impl WallLocation {
     fn position(&self) -> Vec2 {
         match self {
