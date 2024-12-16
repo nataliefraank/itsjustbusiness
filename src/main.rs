@@ -26,6 +26,7 @@ use bevy::prelude::Window;
 use bevy_text_popup::TextPopupPlugin;
 use text::handle_next_popup;
 use text::welcome_setup;
+use text::game_ui;
 
 mod audio;
 use audio::GameAudioPlugin;
@@ -97,6 +98,7 @@ fn main() {
         .set(WindowPlugin {
             primary_window: Some(Window {
                 title: "It's Just Business".into(),
+                resolution: (1280.0, 720.0).into(),
                 ..Default::default()
             }),
             ..Default::default()
@@ -125,7 +127,8 @@ fn main() {
         setup,
         spawn_camera,
         scale_tilemap_to_screen,
-        welcome_setup
+        welcome_setup,
+        //game_ui,
     ))    
     //.add_systems(Update, ui_example_system)
     .add_systems(
@@ -134,6 +137,7 @@ fn main() {
             keyboard_input,
             play_button_press,
             handle_next_popup.run_if(in_state(GameState::Playing)),
+            game_ui.run_if(in_state(GameState::Playing)),
         )
     )
     .run();
@@ -177,7 +181,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn spawn_camera(mut commands: Commands) {
     // Spawn a 2D camera
     let mut our_camera = Camera2dBundle::default();
-    our_camera.transform = Transform::from_xyz(350.0, 225.0, 1.0);
+    our_camera.transform = Transform::from_xyz(350.0, 240.0, 1.0);
     our_camera.projection.scaling_mode = ScalingMode::FixedVertical(500.0);
 
     commands.spawn(our_camera);

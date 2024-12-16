@@ -90,3 +90,51 @@ pub fn trigger_popup(
     };
     text_popup_events.send(event);
 }
+
+pub fn game_ui(mut commands: Commands, mut text_popup_events: EventWriter<TextPopupEvent>) {
+    
+    text_popup_events.send(TextPopupEvent {
+        content: "TASKS COMPLETED: 0".to_string(),
+        font_size: 25.0,
+        background_color: Color::BLACK.with_alpha(0.0),
+        border_color: Color::BLACK.with_alpha(0.0),
+        location: TextPopupLocation::TopLeft,
+        padding: UiRect {
+            left: Val::Px(200.0),
+            right: Val::Px(20.0),
+            top: Val::Px(5.0),
+            bottom: Val::Px(10.0),
+        },
+        ..default()
+    });
+
+    text_popup_events.send(TextPopupEvent {
+        content: "TIME: 05:01 P.M.".to_string(),
+        font_size: 25.0,
+        background_color: Color::BLACK.with_alpha(0.0),
+        border_color: Color::BLACK.with_alpha(0.0),
+        location: TextPopupLocation::TopRight,
+        padding: UiRect {
+            left: Val::Px(20.0),
+            right: Val::Px(200.0),
+            top: Val::Px(5.0),
+            bottom: Val::Px(10.0),
+        },
+        ..default()
+    });
+
+    text_popup_events.send(TextPopupEvent {
+        content: "LEVEL 1".to_string(),
+        font_size: 25.0,
+        background_color: Color::BLACK.with_alpha(0.0),
+        border_color: Color::BLACK.with_alpha(0.0),
+        location: TextPopupLocation::Top,
+        padding: UiRect {
+            left: Val::Px(50.0),
+            right: Val::Px(20.0),
+            top: Val::Px(5.0),
+            bottom: Val::Px(10.0),
+        },
+        ..default()
+    });
+}
