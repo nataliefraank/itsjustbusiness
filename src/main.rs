@@ -27,6 +27,13 @@ use bevy_text_popup::TextPopupPlugin;
 use text::handle_next_popup;
 use text::welcome_setup;
 
+mod audio;
+use audio::GameAudioPlugin;
+use bevy_kira_audio::AudioPlugin;
+use audio::play_button_press;
+use audio::ButtonPressTriggered;
+
+
 
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
@@ -103,9 +110,12 @@ fn main() {
         SpritesheetAnimationPlugin,
         TiledMapPlugin::default(),
         TextPopupPlugin,
+        GameAudioPlugin,
+        AudioPlugin,
     ))
     //.add_plugins(EguiPlugin)
     .init_state::<GameState>()
+    .add_event::<ButtonPressTriggered>()
     .insert_resource(MapInfo {
         map_width: 30.0,
         map_height: 20.0,
@@ -122,6 +132,7 @@ fn main() {
         Update,
         (
             keyboard_input,
+            play_button_press,
             handle_next_popup.run_if(in_state(GameState::Playing)),
         )
     )

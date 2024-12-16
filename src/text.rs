@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 use bevy_input::keyboard::KeyboardInput;
 use bevy_text_popup::{TextPopupButton, TextPopupEvent, TextPopupLocation, TextPopupPlugin, TextPopupTimeout};
+use bevy_kira_audio::prelude::*;
+use crate::audio::ButtonPress;
+use crate::audio::ButtonPressTriggered;
+
 
 
 
@@ -13,6 +17,14 @@ pub struct PopupQueue {
 pub struct PopupState {
     pub is_popup_active: bool,
 }
+
+
+#[derive(Resource)]
+pub struct ButtonPressState {
+    pub triggered: bool,
+}
+
+
 pub fn welcome_setup(mut commands: Commands) {
     let messages = vec![
         "Welcome, Cliff!".to_string(),
@@ -25,6 +37,7 @@ pub fn welcome_setup(mut commands: Commands) {
     ];    
     commands.insert_resource(PopupQueue { messages: messages.into_iter().rev().collect() });
     commands.insert_resource(PopupState { is_popup_active: false });
+    commands.insert_resource(ButtonPressState { triggered: false });
 
 }
 
@@ -34,6 +47,10 @@ pub fn handle_next_popup(
     mut popup_queue: ResMut<PopupQueue>,
     mut popup_state: ResMut<PopupState>,
     //keys: Res<ButtonInput<KeyCode>>,
+    button_press: Res<AudioChannel<ButtonPress>>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+    mut button_press_state: ResMut<ButtonPressState>
 ) {
     if popup_state.is_popup_active {
         return;
@@ -41,7 +58,7 @@ pub fn handle_next_popup(
 
     if let Some(next_message) = popup_queue.messages.pop() {
         popup_state.is_popup_active = true;
-        trigger_popup(&mut text_popup_events, &next_message);
+        trigger_popup(&mut text_popup_events, &next_message, button_press, asset_server, audio);
     }
 
 }
@@ -50,6 +67,9 @@ pub fn handle_next_popup(
 pub fn trigger_popup(
     text_popup_events: &mut EventWriter<TextPopupEvent>,
     content: &str,
+    button_press: Res<AudioChannel<ButtonPress>>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>
 ) {
     let event = TextPopupEvent {
         
@@ -59,6 +79,7 @@ pub fn trigger_popup(
             font_size: 18.0,
             text: "OK".to_string(),
             action: |commands, root_entity| {
+                commands.insert_resource(ButtonPressState { triggered: true });
                 commands.entity(root_entity).despawn_recursive();
                 commands.insert_resource(PopupState { is_popup_active: false });
 
