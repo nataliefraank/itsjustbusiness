@@ -27,6 +27,7 @@ use bevy_text_popup::TextPopupPlugin;
 use text::handle_next_popup;
 use text::welcome_setup;
 use text::game_ui;
+use text::update_time;
 
 mod audio;
 use audio::GameAudioPlugin;
@@ -137,9 +138,13 @@ fn main() {
             keyboard_input,
             play_button_press,
             handle_next_popup.run_if(in_state(GameState::Playing)),
-            game_ui.run_if(in_state(GameState::Playing)),
+            //game_ui.run_if(in_state(GameState::Playing)),
+            update_time.run_if(in_state(GameState::Playing)),
+            
         )
     )
+    .add_systems(OnEnter(GameState::Playing), game_ui)
+    .add_systems(OnEnter(GameState::Playing), update_time)
     .run();
     
 }

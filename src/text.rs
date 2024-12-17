@@ -4,6 +4,7 @@ use bevy_text_popup::{TextPopupButton, TextPopupEvent, TextPopupLocation, TextPo
 use bevy_kira_audio::prelude::*;
 use crate::audio::ButtonPress;
 use crate::audio::ButtonPressTriggered;
+use bevy_text_popup::TextPopupTimeout::Seconds;
 
 
 
@@ -24,6 +25,12 @@ pub struct ButtonPressState {
     pub triggered: bool,
 }
 
+#[derive(Resource)]
+pub struct GameTime {
+    pub hours: u32,
+    pub minutes: u32,
+}
+
 
 pub fn welcome_setup(mut commands: Commands) {
     let messages = vec![
@@ -38,6 +45,10 @@ pub fn welcome_setup(mut commands: Commands) {
     commands.insert_resource(PopupQueue { messages: messages.into_iter().rev().collect() });
     commands.insert_resource(PopupState { is_popup_active: false });
     commands.insert_resource(ButtonPressState { triggered: false });
+    commands.insert_resource(GameTime {
+        hours: 5,
+        minutes: 0,
+    });
 
 }
 
@@ -75,6 +86,10 @@ pub fn trigger_popup(
         
         location: (TextPopupLocation::Center),
         content: content.to_string(),
+        background_color: Color::BLACK.with_alpha(0.9),
+        border_color: Color::BLACK.with_alpha(0.0),
+
+
         confirm_button: Some(TextPopupButton {
             font_size: 18.0,
             text: "OK".to_string(),
@@ -109,17 +124,19 @@ pub fn game_ui(mut commands: Commands, mut text_popup_events: EventWriter<TextPo
     });
 
     text_popup_events.send(TextPopupEvent {
-        content: "TIME: 05:01 P.M.".to_string(),
+        content: "TIME: 05:00 P.M.".to_string(),
         font_size: 25.0,
         background_color: Color::BLACK.with_alpha(0.0),
         border_color: Color::BLACK.with_alpha(0.0),
         location: TextPopupLocation::TopRight,
         padding: UiRect {
             left: Val::Px(20.0),
-            right: Val::Px(200.0),
+            right: Val::Px(175.0),
             top: Val::Px(5.0),
             bottom: Val::Px(10.0),
         },
+        timeout: Seconds(10),
+
         ..default()
     });
 
@@ -138,3 +155,44 @@ pub fn game_ui(mut commands: Commands, mut text_popup_events: EventWriter<TextPo
         ..default()
     });
 }
+
+pub fn update_time(
+    time: Res<Time>, 
+    mut game_time: ResMut<GameTime>, 
+    mut text_popup_events: EventWriter<TextPopupEvent>,
+    mut time_tracker: Local<f32>
+) {
+    *time_tracker += time.delta_seconds();
+
+    if *time_tracker >= 10.0 {
+        *time_tracker = 0.0;
+
+        game_time.minutes += 1;
+        if game_time.minutes >= 60 {
+            game_time.minutes = 0;
+            game_time.hours += 1;
+            if game_time.hours >= 12 {
+                game_time.hours = 0;
+            }
+        }
+        
+        let time_str = format!("TIME: {:02}:{:02} P.M.", game_time.hours, game_time.minutes);
+        
+        text_popup_events.send(TextPopupEvent {
+            content: time_str,
+            font_size: 25.0,
+            background_color: Color::BLACK.with_alpha(0.0),
+            border_color: Color::BLACK.with_alpha(0.0),
+            location: TextPopupLocation::TopRight,
+            padding: UiRect {
+                left: Val::Px(20.0),
+                right: Val::Px(175.0),
+                top: Val::Px(5.0),
+                bottom: Val::Px(10.0),
+            },
+            timeout: Seconds(10),
+            ..default()
+        });
+    }
+}
+
