@@ -1,13 +1,12 @@
-use bevy::prelude::*;
-use bevy_input::keyboard::KeyboardInput;
-use bevy_text_popup::{TextPopupButton, TextPopupEvent, TextPopupLocation, TextPopupPlugin, TextPopupTimeout};
-use bevy_kira_audio::prelude::*;
 use crate::audio::ButtonPress;
 use crate::audio::ButtonPressTriggered;
+use bevy::prelude::*;
+use bevy_input::keyboard::KeyboardInput;
+use bevy_kira_audio::prelude::*;
 use bevy_text_popup::TextPopupTimeout::Seconds;
-
-
-
+use bevy_text_popup::{
+    TextPopupButton, TextPopupEvent, TextPopupLocation, TextPopupPlugin, TextPopupTimeout,
+};
 
 #[derive(Resource)]
 pub struct PopupQueue {
@@ -18,7 +17,6 @@ pub struct PopupQueue {
 pub struct PopupState {
     pub is_popup_active: bool,
 }
-
 
 #[derive(Resource)]
 pub struct ButtonPressState {
@@ -31,27 +29,28 @@ pub struct GameTime {
     pub minutes: u32,
 }
 
-
 pub fn welcome_setup(mut commands: Commands) {
     let messages = vec![
-        "Welcome, Cliff!".to_string(),
-        "Use the Arrow Keys to move around.".to_string(),
-        "Your goal is to clean up the clutter around the office.".to_string(),
-        "Good luck and have fun!".to_string(),
-        "...".to_string(),
-        "Feel free to add more dialogue".to_string(),
-        "Maybe we could do more storytelling in these first few seconds of the game?".to_string(),
-    ];    
-    commands.insert_resource(PopupQueue { messages: messages.into_iter().rev().collect() });
-    commands.insert_resource(PopupState { is_popup_active: false });
+        "It is 5:00 p.m.".to_string(),
+        "Everyone has left the office.".to_string(),
+        "You are an old janitor, Cliff.".to_string(),
+        "Your job is to clean the office.".to_string(),
+        "Use the arrow keys to move around.".to_string(),
+        "By the end of the night, the office might not just be clean.".to_string(),
+        "It might be yours.".to_string(),
+    ];
+    commands.insert_resource(PopupQueue {
+        messages: messages.into_iter().rev().collect(),
+    });
+    commands.insert_resource(PopupState {
+        is_popup_active: false,
+    });
     commands.insert_resource(ButtonPressState { triggered: false });
     commands.insert_resource(GameTime {
         hours: 5,
         minutes: 0,
     });
-
 }
-
 
 pub fn handle_next_popup(
     mut text_popup_events: EventWriter<TextPopupEvent>,
@@ -61,7 +60,7 @@ pub fn handle_next_popup(
     button_press: Res<AudioChannel<ButtonPress>>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
-    mut button_press_state: ResMut<ButtonPressState>
+    mut button_press_state: ResMut<ButtonPressState>,
 ) {
     if popup_state.is_popup_active {
         return;
@@ -69,35 +68,38 @@ pub fn handle_next_popup(
 
     if let Some(next_message) = popup_queue.messages.pop() {
         popup_state.is_popup_active = true;
-        trigger_popup(&mut text_popup_events, &next_message, button_press, asset_server, audio);
+        trigger_popup(
+            &mut text_popup_events,
+            &next_message,
+            button_press,
+            asset_server,
+            audio,
+        );
     }
-
 }
-
 
 pub fn trigger_popup(
     text_popup_events: &mut EventWriter<TextPopupEvent>,
     content: &str,
     button_press: Res<AudioChannel<ButtonPress>>,
     asset_server: Res<AssetServer>,
-    audio: Res<Audio>
+    audio: Res<Audio>,
 ) {
     let event = TextPopupEvent {
-        
         location: (TextPopupLocation::Center),
         content: content.to_string(),
         background_color: Color::BLACK.with_alpha(0.9),
         border_color: Color::BLACK.with_alpha(0.0),
 
-
         confirm_button: Some(TextPopupButton {
             font_size: 18.0,
-            text: "OK".to_string(),
+            text: "->".to_string(),
             action: |commands, root_entity| {
                 commands.insert_resource(ButtonPressState { triggered: true });
                 commands.entity(root_entity).despawn_recursive();
-                commands.insert_resource(PopupState { is_popup_active: false });
-
+                commands.insert_resource(PopupState {
+                    is_popup_active: false,
+                });
             },
             ..Default::default()
         }),
@@ -107,7 +109,6 @@ pub fn trigger_popup(
 }
 
 pub fn game_ui(mut commands: Commands, mut text_popup_events: EventWriter<TextPopupEvent>) {
-    
     text_popup_events.send(TextPopupEvent {
         content: "TASKS COMPLETED: 0".to_string(),
         font_size: 25.0,
@@ -157,10 +158,10 @@ pub fn game_ui(mut commands: Commands, mut text_popup_events: EventWriter<TextPo
 }
 
 pub fn update_time(
-    time: Res<Time>, 
-    mut game_time: ResMut<GameTime>, 
+    time: Res<Time>,
+    mut game_time: ResMut<GameTime>,
     mut text_popup_events: EventWriter<TextPopupEvent>,
-    mut time_tracker: Local<f32>
+    mut time_tracker: Local<f32>,
 ) {
     *time_tracker += time.delta_seconds();
 
@@ -175,9 +176,9 @@ pub fn update_time(
                 game_time.hours = 0;
             }
         }
-        
+
         let time_str = format!("TIME: {:02}:{:02} P.M.", game_time.hours, game_time.minutes);
-        
+
         text_popup_events.send(TextPopupEvent {
             content: time_str,
             font_size: 25.0,
@@ -195,4 +196,3 @@ pub fn update_time(
         });
     }
 }
-
