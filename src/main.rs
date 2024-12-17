@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::ScalingMode, window::PrimaryWindow};
+use bevy::{prelude::*, render::camera::ScalingMode, transform::commands, window::PrimaryWindow};
 use bevy_ecs_tiled::{TiledMapHandle, TiledMapPlugin};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_tweening::Tween;
@@ -9,25 +9,29 @@ use bevy_tweening::*;
 use lens::TransformPositionLens;
 
 mod cursor;
-mod graphics;
 mod mainmenu;
 mod text;
+
 use crate::mainmenu::MenuPlugin;
 
-use bevy::prelude::Window;
-use bevy_egui::{egui, EguiContexts};
+
 use bevy_spritesheet_animation::prelude::*;
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy::prelude::Window;
 use bevy_text_popup::TextPopupPlugin;
-use text::game_ui;
 use text::handle_next_popup;
-use text::update_time;
 use text::welcome_setup;
+use text::game_ui;
+use text::update_time;
 
 mod audio;
-use audio::play_button_press;
-use audio::ButtonPressTriggered;
 use audio::GameAudioPlugin;
 use bevy_kira_audio::AudioPlugin;
+use audio::play_button_press;
+use audio::ButtonPressTriggered;
+
+
+
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum GameState {
@@ -80,70 +84,72 @@ struct Speed {
     speed: i32,
 }
 
+// #[derive(Component)]
+struct MyCameraMarker;
+
 fn main() {
     // Create a new application.
     App::default()
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "It's Just Business".into(),
-                        resolution: (1280.0, 720.0).into(),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                })
-                .set(ImagePlugin::default_nearest()),
-        )
-        .add_plugins((
-            bevy_tweening::TweeningPlugin,
-            TilemapPlugin,
-            MenuPlugin,
-            SpritesheetAnimationPlugin,
-            TiledMapPlugin::default(),
-            TextPopupPlugin,
-            GameAudioPlugin,
-            AudioPlugin,
-        ))
-        //.add_plugins(EguiPlugin)
-        .init_state::<GameState>()
-        .add_event::<ButtonPressTriggered>()
-        .insert_resource(MapInfo {
-            map_width: 30.0,
-            map_height: 20.0,
+    .add_plugins(DefaultPlugins
+        .set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "It's Just Business".into(),
+                resolution: (1280.0, 720.0).into(),
+                ..Default::default()
+            }),
+            ..Default::default()
         })
-        .add_systems(
-            Startup,
-            (
-                spawn_entity,
-                setup,
-                spawn_camera,
-                scale_tilemap_to_screen,
-                welcome_setup,
-                //game_ui,
-            ),
+        .set(ImagePlugin::default_nearest())
+    )
+    .add_plugins((
+        bevy_tweening::TweeningPlugin,
+        TilemapPlugin,
+        MenuPlugin,
+        SpritesheetAnimationPlugin,
+        TiledMapPlugin::default(),
+        TextPopupPlugin,
+        GameAudioPlugin,
+        AudioPlugin,
+    ))
+    //.add_plugins(EguiPlugin)
+    .init_state::<GameState>()
+    .add_event::<ButtonPressTriggered>()
+    .insert_resource(MapInfo {
+        map_width: 30.0,
+        map_height: 20.0,
+    })
+    .add_systems(Startup, (
+        spawn_entity,
+        setup,
+        spawn_camera,
+        scale_tilemap_to_screen,
+        welcome_setup,
+        //game_ui,
+    ))    
+    //.add_systems(Update, ui_example_system)
+    .add_systems(
+        Update,
+        (
+            keyboard_input,
+            play_button_press,
+            handle_next_popup.run_if(in_state(GameState::Playing)),
+            //game_ui.run_if(in_state(GameState::Playing)),
+            update_time.run_if(in_state(GameState::Playing)),
+            
         )
-        //.add_systems(Update, ui_example_system)
-        .add_systems(
-            Update,
-            (
-                keyboard_input,
-                play_button_press,
-                handle_next_popup.run_if(in_state(GameState::Playing)),
-                //game_ui.run_if(in_state(GameState::Playing)),
-                update_time.run_if(in_state(GameState::Playing)),
-            ),
-        )
-        .add_systems(OnEnter(GameState::Playing), game_ui)
-        .add_systems(OnEnter(GameState::Playing), update_time)
-        .run();
+    )
+    .add_systems(OnEnter(GameState::Playing), game_ui)
+    .add_systems(OnEnter(GameState::Playing), update_time)
+    .run();
+    
 }
 
-fn _ui_example_system(mut contexts: EguiContexts) {
+fn ui_example_system(mut contexts: EguiContexts) {
     egui::Window::new("Hello").show(contexts.ctx_mut(), |ui| {
         ui.label("world");
     });
 }
+
 
 // Loads tilemap and janitor sprite.
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -167,6 +173,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         map_width,
         map_height,
     });
+    
 
     info!("Setup complete. Map size: {}x{}", map_width, map_height);
 }
@@ -221,6 +228,7 @@ struct PosVar {
     timer: Timer,
     in_anim: bool,
     last_direction: Option<Vec3>,
+    
 }
 fn keyboard_input(
     keys: Res<ButtonInput<KeyCode>>,
@@ -233,9 +241,10 @@ fn keyboard_input(
         &mut Transform,
         &mut Sprite,
         &mut SpritesheetAnimation,
+        
     )>,
 ) {
-    for (_entity, _mut_transformm, _mut_spriteee, mut animation) in &mut characters {
+    for (entity, mut transform, mut sprite, mut animation) in &mut characters {
         local.timer.tick(time.delta());
         if local.timer.just_finished() {
             local.in_anim = false;
@@ -250,18 +259,22 @@ fn keyboard_input(
                 new_animation_id = library.animation_with_name("rightwalk");
                 direction = Some(vec3(27., 0., 0.));
                 local.last_direction = Some(direction.unwrap());
+
             } else if keys.pressed(KeyCode::ArrowLeft) {
                 new_animation_id = library.animation_with_name("leftwalk");
                 direction = Some(vec3(-27., 0., 0.));
                 local.last_direction = Some(direction.unwrap());
+
             } else if keys.pressed(KeyCode::ArrowDown) {
                 new_animation_id = library.animation_with_name("frontwalk");
                 direction = Some(vec3(0., -27., 0.));
                 local.last_direction = Some(direction.unwrap());
+
             } else if keys.pressed(KeyCode::ArrowUp) {
                 new_animation_id = library.animation_with_name("upwardwalk");
                 direction = Some(vec3(0., 27., 0.));
                 local.last_direction = Some(direction.unwrap());
+
             }
             if !keys.pressed(KeyCode::ArrowRight)
                 && !keys.pressed(KeyCode::ArrowLeft)
@@ -269,21 +282,15 @@ fn keyboard_input(
                 && !keys.pressed(KeyCode::ArrowUp)
             {
                 new_animation_id = Some(match local.last_direction {
-                    Some(dir) if dir == vec3(27., 0., 0.) => {
-                        library.animation_with_name("rightidle").unwrap()
-                    }
-                    Some(dir) if dir == vec3(-27., 0., 0.) => {
-                        library.animation_with_name("leftidle").unwrap()
-                    }
-                    Some(dir) if dir == vec3(0., -27., 0.) => {
-                        library.animation_with_name("frontidle").unwrap()
-                    }
-                    Some(dir) if dir == vec3(0., 27., 0.) => {
-                        library.animation_with_name("upwardidle").unwrap()
-                    }
+                    Some(dir) if dir == vec3(27., 0., 0.) => library.animation_with_name("rightidle").unwrap(),
+                    Some(dir) if dir == vec3(-27., 0., 0.) => library.animation_with_name("leftidle").unwrap(),
+                    Some(dir) if dir == vec3(0., -27., 0.) => library.animation_with_name("frontidle").unwrap(),
+                    Some(dir) if dir == vec3(0., 27., 0.) => library.animation_with_name("upwardidle").unwrap(),
                     _ => library.animation_with_name("frontidle").unwrap(),
                 });
             }
+            
+            
 
             if let Some(animation_id) = new_animation_id {
                 if animation.animation_id != animation_id {
@@ -317,12 +324,14 @@ fn keyboard_input(
     }
 }
 
+
+
 fn spawn_entity(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut library: ResMut<SpritesheetLibrary>,
-    mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
+     asset_server: Res<AssetServer>,
+     mut library: ResMut<SpritesheetLibrary>,
+     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    ) {
     let tween = Tween::new(
         EaseFunction::QuadraticInOut,
         Duration::from_secs(1),
@@ -347,72 +356,71 @@ fn spawn_entity(
     //Left idle
     let leftidle_clip_id = library.new_clip(|clip| {
         clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(2, 0..=0));
+
     });
     let leftidle_anim_id = library.new_animation(|animation| {
-        animation.add_stage(leftidle_clip_id.into());
-    });
-    library
-        .name_animation(leftidle_anim_id, "leftidle")
-        .unwrap();
-
+        animation
+            .add_stage(leftidle_clip_id.into());
+            });
+    library.name_animation(leftidle_anim_id, "leftidle").unwrap();
+   
     //Right idle
     let rightidle_clip_id = library.new_clip(|clip| {
         clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(3, 0..=0));
+
     });
     let rightidle_anim_id = library.new_animation(|animation| {
-        animation.add_stage(rightidle_clip_id.into());
-    });
-    library
-        .name_animation(rightidle_anim_id, "rightidle")
-        .unwrap();
+        animation
+            .add_stage(rightidle_clip_id.into());
+            });
+    library.name_animation(rightidle_anim_id, "rightidle").unwrap();         
     //Front idle
     let frontidle_clip_id = library.new_clip(|clip| {
         clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(0, 0..=0));
+
     });
     let frontidle_anim_id = library.new_animation(|animation| {
-        animation.add_stage(frontidle_clip_id.into());
-    });
-    library
-        .name_animation(frontidle_anim_id, "frontidle")
-        .unwrap();
+        animation
+            .add_stage(frontidle_clip_id.into());
+            });
+    library.name_animation(frontidle_anim_id, "frontidle").unwrap();
 
     //Upward idle
     let upwardidle_clip_id = library.new_clip(|clip| {
         clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(1, 0..=0));
+
     });
     let upwardidle_anim_id = library.new_animation(|animation| {
-        animation.add_stage(upwardidle_clip_id.into());
-    });
-    library
-        .name_animation(upwardidle_anim_id, "upwardidle")
-        .unwrap();
+        animation
+            .add_stage(upwardidle_clip_id.into());
+            });
+    library.name_animation(upwardidle_anim_id, "upwardidle").unwrap();      
 
     //Left walking direction
     let leftwalk_clip_id = library.new_clip(|clip| {
         //clip.push_frame_indices(Spritesheet::new(3, 4).horizontal_strip(1, 3, 3));
         clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(2, 1..=2));
+
     });
     let leftwalk_anim_id = library.new_animation(|animation| {
         animation
             .add_stage(leftwalk_clip_id.into())
             .set_repeat(AnimationRepeat::Loop);
-    });
-    library
-        .name_animation(leftwalk_anim_id, "leftwalk")
-        .unwrap();
+            });
+    library.name_animation(leftwalk_anim_id, "leftwalk").unwrap();
+
 
     //Right walking direction
     let rightwalk_clip_id = library.new_clip(|clip| {
         clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(3, 1..=2));
+
     });
     let rightwalk_anim_id = library.new_animation(|animation| {
         animation
             .add_stage(rightwalk_clip_id.into())
-            .set_repeat(AnimationRepeat::Loop);
-    });
-    library
-        .name_animation(rightwalk_anim_id, "rightwalk")
-        .unwrap();
+            .set_repeat(AnimationRepeat::Loop);  
+        });
+    library.name_animation(rightwalk_anim_id, "rightwalk").unwrap();
 
     //Front walking direction
     let frontwalk_clip_id = library.new_clip(|clip| {
@@ -421,25 +429,25 @@ fn spawn_entity(
     let frontwalk_anim_id = library.new_animation(|animation| {
         animation
             .add_stage(frontwalk_clip_id.into())
-            .set_repeat(AnimationRepeat::Loop);
+            .set_repeat(AnimationRepeat::Loop);  
+    
     });
-    library
-        .name_animation(frontwalk_anim_id, "frontwalk")
-        .unwrap();
+    library.name_animation(frontwalk_anim_id, "frontwalk").unwrap();
 
     //Upward walking direction
     let upwardwalk_clip_id = library.new_clip(|clip| {
         clip.push_frame_indices(Spritesheet::new(3, 4).row_partial(1, 1..=2));
+
     });
     let upwardwalk_anim_id = library.new_animation(|animation| {
         animation
             .add_stage(upwardwalk_clip_id.into())
-            .set_repeat(AnimationRepeat::Loop);
-    });
-    library
-        .name_animation(upwardwalk_anim_id, "upwardwalk")
-        .unwrap();
+            .set_repeat(AnimationRepeat::Loop);   
+          
+        });
+    library.name_animation(upwardwalk_anim_id, "upwardwalk").unwrap();
 
+ 
     let id = commands
         .spawn((
             SpriteBundle {
@@ -461,6 +469,7 @@ fn spawn_entity(
             },
             SpritesheetAnimation::from_id(frontidle_anim_id),
             Animator::new(tween),
+
         ))
         .id();
     commands.insert_resource(PosVar {
@@ -472,7 +481,7 @@ fn spawn_entity(
     });
 }
 
-fn _spawn_task(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_task(mut commands: Commands, asset_server: Res<AssetServer>) {
     let planttexture: Handle<Image> = asset_server.load("plant_asset1.png");
     let mut plant_object = SpriteBundle::default();
 
