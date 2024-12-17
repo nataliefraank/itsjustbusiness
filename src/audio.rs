@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use bevy_kira_audio::{Audio, AudioChannel, AudioPlugin, AudioSource};
+use bevy_kira_audio::{Audio, AudioChannel};
 use crate::GameState;
 use crate::text::ButtonPressState;
 
@@ -29,7 +29,7 @@ impl Plugin for GameAudioPlugin {
 
 
 
-pub fn play_bgm(background: Res<AudioChannel<Background>>, asset_server: Res<AssetServer>, audio: Res<Audio>) {
+pub fn play_bgm(background: Res<AudioChannel<Background>>, asset_server: Res<AssetServer>, _audio: Res<Audio>) {
     background.set_volume(0.05);
     background
     .play(asset_server.load("retroindiejosh_50s-bit.ogg")).looped();
@@ -41,7 +41,7 @@ pub fn play_button_press(
     mut button_press_event_writer: EventWriter<ButtonPressTriggered>,
     button_press: Res<AudioChannel<ButtonPress>>,
     asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
+    _audio: Res<Audio>,
     mut button_press_state: ResMut<ButtonPressState>
 ) {
     if button_press_state.triggered {
