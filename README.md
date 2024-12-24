@@ -1,8 +1,19 @@
-**How to Run**
-1. Install Rust: If you don’t already have Rust installed, download and install it using rustup.
+## Running the Game
+**Prerequisites**
+1. Install Rust: If you don’t already have Rust installed, download and install it using ```rustup```.
 2. Run the following command in your terminal after installation to confirm it’s installed:
-   rustc --version
+   ```rustc --version```
 3. Install Git: If you don’t already have Git, download and install it from [git-scm.com](url).
+
+**Steps to Run**
+1. Clone the Repository:
+   ```git clone <repository-url>```
+   Replace ```<repository-url>``` with the HTTPS or SSH URL of this repository.
+2. Navigate to the Project Directory:
+   ```cd itsjustbusiness```
+3. Run the Game:
+   ```cargo run --release```
+   The ```--release``` flag ensures the game runs with optimizations for better performance.
 
 # Report of Project
 
