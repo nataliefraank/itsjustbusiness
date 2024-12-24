@@ -4,6 +4,7 @@ Will Domm, John Saluta, Natalie Frank
 Systems Programming
 
 **Overview**
+
 	It’s Just Business is a two-dimensional retro video game. We used bevy as a game engine, created game design art via Aseprite, and integrated art into a tilemap using Tiled. In addition to this, we used various crates that allowed for sprite movement, animation, user interaction, tilemap placement, and more. We used device-query (v2.1.0) for user input, rapier2d (v0.22.0) for physics, bevy (v0.14) for game functionality, bevy_ecs_tiled (v0.4) for Tiled integration, bevy_ecs_tilemap (v0.14) for tilemap methods, rand (v0.8.5) for random number generation, bevy_rapier2d (v0.27.0) for physics in bevy, bevy_tweening (v0.11.0) for animated character movement, proc_macro2 (v1.0) for proc_macro states and derive, quote (v1.0), and syn (v1.0). While game development in Rust is still growing and adapting (Bevy released a new version in the middle of our project), bevy is a powerful game engine that supports many different features and functionalities. We modeled our game after other successful games developed with bevy and thus achieved features that advanced our game. bevy’s bundles, textures, and app installation systems made possible a game with multiple sprites, a tilemap, and interactive game mechanics.
 
 **Project Description**
