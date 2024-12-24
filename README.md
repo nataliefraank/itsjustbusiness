@@ -1,75 +1,28 @@
-# groupproject
+# Report of Project
 
 Will Domm, John Saluta, Natalie Frank
-October 18, 2024
 Systems Programming
 
-**Project Proposal**
-
 **Overview**
-	Our project will be a two-dimensional video game. We will integrate crates that allow for animated characters, background, and movement, such as ascending_graphics, blue_engine, sdl2, caper, and/or frug. These crates allow for integration of design features without sacrificing the integrity of our code nor the time it may take to code this independently. Game development in Rust is still in early phases, which doesn’t leave us with a foundational framework to go off of, but there are many elements we can use to start our project. For instance, games like Veloren use Rust to successfully build off of other successful video games and create a large player platform. Our game will be a 2D platforming-based game, with features such as scoring, precise movement-based gameplay, and a high-score mechanic. We also will have multiple textures to indicate multiple playable characters. 
+	It’s Just Business is a two-dimensional retro video game. We used bevy as a game engine, created game design art via Aseprite, and integrated art into a tilemap using Tiled. In addition to this, we used various crates that allowed for sprite movement, animation, user interaction, tilemap placement, and more. We used device-query (v2.1.0) for user input, rapier2d (v0.22.0) for physics, bevy (v0.14) for game functionality, bevy_ecs_tiled (v0.4) for Tiled integration, bevy_ecs_tilemap (v0.14) for tilemap methods, rand (v0.8.5) for random number generation, bevy_rapier2d (v0.27.0) for physics in bevy, bevy_tweening (v0.11.0) for animated character movement, proc_macro2 (v1.0) for proc_macro states and derive, quote (v1.0), and syn (v1.0). While game development in Rust is still growing and adapting (Bevy released a new version in the middle of our project), bevy is a powerful game engine that supports many different features and functionalities. We modeled our game after other successful games developed with bevy and thus achieved features that advanced our game. bevy’s bundles, textures, and app installation systems made possible a game with multiple sprites, a tilemap, and interactive game mechanics.
 
-**Required Learning**
-	We will need to learn how to use different crates and APIs to create a professional and complete video game. This may include sign-ins, progress saving, and user interface additions. Reading, understanding, and becoming familiar with these crates will be an essential part of making our game. This will help us practice reading and writing off of code that we did not ourselves make, which will be a useful skill for our later computer science courses. We will need to make a 2D game engine that satisfies our needs, and build off that by incorporating ideas such as objects and game instances. 
-	There are multiple helpful resources including game resource libraries and video game company frameworks that can define the trajectory and progress of our project. This includes Unity documentation and the ggez Rust library. These resources can help guide 2D drawing, sounds and animations, resource loading, and event handling. We will seek to facilitate seamless integration of crates and APIs to make our video game as professional and fun as possible. 
+**Project Description**
+	_It’s Just Business_ follows an old janitor, Cliff, who explores the corporate office after five p.m. The office is structured so that there are two conference rooms, a main cubicle area, a small break room, the boss’s office, a security office, and a closet. Each room is scattered with mess, such as drawing-scribbled papers, tipped-over chairs, clutter, and trash. It is Cliff’s job to clean the office and head home, only to do it again tomorrow.
+	But tonight, Cliff decides to explore the office. This office is, for a small time, his world. He waters the plants. He rights the chairs. Most importantly, Cliff imagines his life if he were more than a janitor, more than a mere corporate worker, but the boss himself. With the office empty, it is briefly Cliff’s, and Cliff is the boss. 
+	There are clues hidden throughout the office. Find them all and Cliff can advance up the corporate ladder, climbing from janitor to worker to boss, all the way to CEO. With each advancement, the office changes to a new level. Cliff begins in a small corporate office; he must clean the office, and if he finds a critical item, he can leverage this to his advantage. He works for the office-workers; this office is their livelihood, and Cliff is prepared to climb above it. It’s not personal. After all, it’s just business.
 
-**Proposed Schedule**
-_Week
-Task_
+ **Gameplay**
+ 	The game begins on a title screen; users may select to Play or Exit the game. After the former selection, users will be landed in the retro office. Cliff begins at the entrance to the office at the top of the screen. Using keyboard keys such as the up, down, left, and right arrow, users can control Cliff’s movements around the screen. Users should explore the office. They may enter different rooms, navigate around cubicles, and inspect the office. 
+	Features that are not implemented yet may include Cliff fixing cluttered parts of the room. By navigating to a cluttered part of the room, Cliff will fix the mess and return the furniture or space to cleanliness. After the user as Cliff has finished cleaning all of the messes, he will be free to find the clue that advances him to the next level.
 
+**Goals**
+	There were many goals that we accomplished and some stretch goals that we could have accomplished with more time.
+	We successfully completed a Game Design Document (GDD) that detailed the game’s goals, mechanics, and features. We researched successful 2D game engines, set up a github repository, and implemented bevy. We used crates to receive mouse and keyboard input, implemented player movement, and used a physics crate. We created a player sprite, 2D game assets, and a tilemap; with these objects, we set up an app installation that uploads and renders the player. We set up a title screen; we could have added more comments or narration during the game.
+	We began to add collision detection between the player and objects but did not complete it. We did not add game mechanics like item collection or enemies; these were stretch goals. We designed the structure of these mechanics but did not implement them. We did not add visual or sound effects; if we had more time, we could have cued these at various events, movements, or other game mechanics. We did not add UI for victory or advancement points. We did not create multiple levels or transitions. We could have added these features with more time.
 
-10/28/24
-We will write a Game Design Document (GDD) that outlines the game’s goals, mechanics, and features. This will also include basic character and environmental designs. 
-We will create a shared file to document weekly changes and updates to the game.
-We will research successful 2D game engines. 
-We will set up the github repository. We will implement an API to test game rendering. 
-
-
-11/04/24
-We will use an API to receive mouse and keyboard input. 
-We will implement player movement. We will use a physics crate.
-We will create a player sprite. We will create 2D game assets.
-We will set up a game loop that uploads and renders the player.
-
-
-11/11/24
-We will add collision detection between the player and objects. 
-We will build a basic design level using tilemaps or custom geometry. 
-We will add game mechanics like item collection or enemies. We will build items to collect or gain (i.e. coins, weapons, food). We will build an AI enemy that may chase or fight the player.
-
-
-11/18/24
-We will add sound and visual effects. We can use crates or APIs to integrate this. Sound and visual effects may be cued at various events, movements, or game mechanics. We will chart this out to ensure reliability and continuity within the game. 
-We will add a basic user interface for health or victory points. Health and victory points can be seen throughout the game.
-We will create multiple levels and transitions. These levels will encourage the user to continue playing the game and level up as the game progresses. Enemies, item collection, and/or points may instigate this.
-We will create a game over and title screen.
-We will have the status report submitted. The game should run enough to let the player(s) accomplish the main objectives. 
-
-
-11/25/24
-We will test the game and fix bugs. We will playtest the game to detect errors.
-We will polish game mechanics, interactions, and features.
-We will refine animations and sound effects.
-
-
-12/02/24
-We will optimize game performance. 
-We will write game documentation. 
-We will create a game demo for our final presentation. 
-
-
-12/09/24
-We will put finishing touches on the project, as well as debugging and preparing for our presentation. Our project will be complete and free of any errors that may prevent playability. We will optimize the user experience and accessibility to allow all players to participate in the project. 
-
-
-12/16/24
-We will practice our final presentations. We will present on our project.
-
-**Status Update**
-John and Natalie drafted a GDD (https://docs.google.com/document/d/1-JhXKA7o_2BysKqky-wLEJrhXI38WQaop78RezyCiPc/edit?usp=sharing). It includes fundamental game design ideas and mechanics. It does not go into much depth. We will add to the document as we develop.
-We will track weekly changes and updates on GitHub commits right now because it has built-in version control. As the game becomes more advanced, this may change.
-We found a repository of successful 2D games. 
-We might use GFX to help with 2D game rendering. Reddit has more ideas.
-We found the 2d physics crate Rapier and added it to the project repository.
-We added the game development crate bevy and created a simple implementation.
-John created the player sprite. Natalie created the tilemap.  
+**Challenges**
+	We faced a few challenges during this project. Off of the bat, bevy is a constantly changing and adapting game engine. Thus, it goes through frequent version updates. During our project, bevy advanced from v0.14 to v0.15. Version changes make it hard to ensure generalizability across code. Unfortunately, this also means that sample code or online coding forums do not present usable code or functional methods. They provide structures or frameworks that we can emulate, but constantly adapting code to fit new versions can be a challenge.
+	Once we learned the basics of bevy, we learned how to create a basic game set up. This includes spawning the tilemap, a sprite, and a camera to center on the map. This involved using the Transform method. We initially had an issue with centering the tilemap and sprite as they were oriented to the center of the screen, and we could not deduce how to change the position of the tilemap. After a few days of hard work, we realized that we should center the camera on the map and transform the sprite to be at the top center of the tilemap. 
+	Correct tilemap, camera, and sprite placement set the foundation for dealing with more complex features such as player movement, animation, and collision. We struggled with player movement as our initial goal. It was difficult because we had spawned the sprite, and we did not know how to integrate sprite spawning and using keyboard input to move it. While we were trying to achieve high modularity within our project, this may have been our handicap as creating multiple different files only served to confuse where our error was. Eventually, we gave up on trying to isolate features into different files and worked directly in main.
+	Discovering tweening was a game changer––literally. When we wrote tweening animations into our main code, we had large success with moving our sprite. Initially, the sprite would start at the bottom of the screen, but we found a way to size it correctly and place it at its starting position.
+	As always, there are struggles with creating a video game and all of its features, especially in a game engine that changes so frequently. Animation and collision detection continue to be challenges that we approach. We have found that documenting our code, separating code into clear methods, and using online resources can be a great way to overcome challenges.
